@@ -19,7 +19,12 @@ const Projects = () => {
         const res = await axios.get('/api/v1/projects', {
           headers: { Authorization: `Bearer ${token}` }
         })
-        setProjects(res.data)
+        if (res.data && res.data.success && Array.isArray(res.data.data)) {
+          setProjects(res.data.data)
+        } else {
+          console.error('Неожиданный формат ответа:', res.data)
+          setProjects([])
+        }
       } catch (error) {
         console.error(error)
       }
@@ -44,12 +49,14 @@ const Projects = () => {
         <Typography variant="h4" gutterBottom>
           Projects
         </Typography>
-        <Button variant="contained" sx={{ mb: 2 }}>Add Project</Button>
+        <Button variant="contained" sx={{ mb: 2 }} onClick={() => navigate('/projects/new')}>
+          Add Project
+        </Button>
         <List>
           {projects.map(project => (
             <ListItem key={project.id} secondaryAction={
               <>
-                <IconButton edge="end" aria-label="edit">
+                <IconButton edge="end" aria-label="edit" onClick={() => navigate(`/projects/edit/${project.id}`)}>
                   <Edit />
                 </IconButton>
                 <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(project.id)}>

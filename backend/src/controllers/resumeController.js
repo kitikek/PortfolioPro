@@ -60,4 +60,16 @@ const deleteResume = async (req, res) => {
   }
 };
 
-module.exports = { getResumes, createResume, updateResume, deleteResume };
+const getResumeById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const resume = await Resume.findOne({ where: { id, user_id: req.user.id } });
+    if (!resume) return response.error(res, 'Резюме не найдено', 404);
+    response.success(res, resume);
+  } catch (error) {
+    console.error(error);
+    response.error(res, 'Ошибка сервера', 500);
+  }
+};
+
+module.exports = { getResumes, createResume, updateResume, deleteResume, getResumeById };

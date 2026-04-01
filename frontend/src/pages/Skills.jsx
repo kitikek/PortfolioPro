@@ -19,7 +19,12 @@ const Skills = () => {
         const res = await axios.get('/api/v1/skills', {
           headers: { Authorization: `Bearer ${token}` }
         })
-        setSkills(res.data)
+        if (res.data && res.data.success && Array.isArray(res.data.data)) {
+          setSkills(res.data.data)
+        } else {
+          console.error('Неожиданный формат ответа:', res.data)
+          setSkills([])
+        }
       } catch (error) {
         console.error(error)
       }
@@ -44,12 +49,14 @@ const Skills = () => {
         <Typography variant="h4" gutterBottom>
           Skills
         </Typography>
-        <Button variant="contained" sx={{ mb: 2 }}>Add Skill</Button>
+        <Button variant="contained" sx={{ mb: 2 }} onClick={() => navigate('/skills/new')}>
+          Add Skill
+        </Button>
         <List>
           {skills.map(skill => (
             <ListItem key={skill.id} secondaryAction={
               <>
-                <IconButton edge="end" aria-label="edit">
+                <IconButton edge="end" aria-label="edit" onClick={() => navigate(`/skills/edit/${skill.id}`)}>
                   <Edit />
                 </IconButton>
                 <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(skill.id)}>
@@ -57,7 +64,7 @@ const Skills = () => {
                 </IconButton>
               </>
             }>
-              <ListItemText primary={skill.name} secondary={`Level: ${skill.level}, Category: ${skill.category}`} />
+              <ListItemText primary={skill.name} secondary={`Level: ${skill.level}, Category: ${skill.category || 'Без категории'}`} />
             </ListItem>
           ))}
         </List>

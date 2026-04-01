@@ -19,7 +19,12 @@ const Resume = () => {
         const res = await axios.get('/api/v1/resumes', {
           headers: { Authorization: `Bearer ${token}` }
         })
-        setResumes(res.data)
+        if (res.data && res.data.success && Array.isArray(res.data.data)) {
+          setResumes(res.data.data)
+        } else {
+          console.error('Неожиданный формат ответа:', res.data)
+          setResumes([])
+        }
       } catch (error) {
         console.error(error)
       }
@@ -44,12 +49,14 @@ const Resume = () => {
         <Typography variant="h4" gutterBottom>
           Resumes
         </Typography>
-        <Button variant="contained" sx={{ mb: 2 }}>Create Resume</Button>
+        <Button variant="contained" sx={{ mb: 2 }} onClick={() => navigate('/resume/new')}>
+          Create Resume
+        </Button>
         <List>
           {resumes.map(resume => (
             <ListItem key={resume.id} secondaryAction={
               <>
-                <IconButton edge="end" aria-label="edit">
+                <IconButton edge="end" aria-label="edit" onClick={() => navigate(`/resume/edit/${resume.id}`)}>
                   <Edit />
                 </IconButton>
                 <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(resume.id)}>

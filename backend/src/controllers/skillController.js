@@ -61,4 +61,18 @@ const deleteSkill = async (req, res) => {
   }
 };
 
-module.exports = { getSkills, createSkill, updateSkill, deleteSkill };
+const getSkillById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const skill = await Skill.findOne({ where: { id, user_id: req.user.id } });
+    if (!skill) {
+      return response.error(res, 'Навык не найден', 404);
+    }
+    response.success(res, skill);
+  } catch (error) {
+    console.error(error);
+    response.error(res, 'Ошибка сервера', 500);
+  }
+};
+
+module.exports = { getSkills, createSkill, updateSkill, deleteSkill, getSkillById };

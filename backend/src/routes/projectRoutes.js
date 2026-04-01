@@ -27,5 +27,6 @@ router.post('/', createProject);      // POST /api/v1/projects
 router.get('/:id', getProjectById);   // GET /api/v1/projects/:id
 router.put('/:id', updateProject);    // PUT /api/v1/projects/:id
 router.delete('/:id', deleteProject); // DELETE /api/v1/projects/:id
+router.get('/', protect, getUserProjects);   // GET /api/v1/projects
 
 module.exports = router;
