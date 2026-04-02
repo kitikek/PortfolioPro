@@ -9,6 +9,7 @@ import Navbar from './components/Navbar'
 import ProjectForm from './pages/ProjectForm'
 import SkillForm from './pages/SkillForm'
 import ResumeForm from './pages/ResumeForm'
+import PublicResume from './pages/PublicResume';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/skills/edit/:id" element={<SkillForm />} />
         <Route path="/resume/new" element={<ResumeForm />} />
         <Route path="/resume/edit/:id" element={<ResumeForm />} />
+        <Route path="/resume/public/:id" element={<PublicResume />} />
       </Routes>
     </>
   )

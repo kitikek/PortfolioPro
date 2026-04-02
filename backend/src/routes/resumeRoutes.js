@@ -1,13 +1,20 @@
 const express = require('express');
-const { getResumes, createResume, updateResume, deleteResume, getResumeById } = require('../controllers/resumeController');
+const { getResumes, createResume, updateResume, deleteResume, getResumeById, publishResume, unpublishResume, getPublicResume } = require('../controllers/resumeController');
 const { protect } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-router.get('/', protect, getResumes);
-router.post('/', protect, createResume);
-router.put('/:id', protect, updateResume);
-router.delete('/:id', protect, deleteResume);
-router.get('/:id', protect, getResumeById);
+// Публичные маршруты
+router.get('/public/:id', getPublicResume);
+
+// Защищённые маршруты
+router.use(protect);
+router.get('/', getResumes);
+router.get('/:id', getResumeById);
+router.post('/', createResume);
+router.put('/:id', updateResume);
+router.delete('/:id', deleteResume);
+router.put('/:id/publish', publishResume);
+router.put('/:id/unpublish', unpublishResume);
 
 module.exports = router;

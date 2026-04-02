@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Container, Typography, Box, Button, List, ListItem, ListItemText, IconButton } from '@mui/material'
-import { Delete, Edit } from '@mui/icons-material'
+import { Container, Typography, Box, Button, List, ListItem, ListItemText, IconButton, Chip } from '@mui/material'
+import { Delete, Edit, Share, Public, Lock } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
@@ -33,6 +33,7 @@ const Resume = () => {
   }, [navigate, token])
 
   const handleDelete = async (id) => {
+    if (!window.confirm('Удалить резюме?')) return
     try {
       await axios.delete(`/api/v1/resumes/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -43,14 +44,20 @@ const Resume = () => {
     }
   }
 
+  const copyLink = (id) => {
+    const url = `${window.location.origin}/resume/public/${id}`
+    navigator.clipboard.writeText(url)
+    alert('Ссылка скопирована')
+  }
+
   return (
     <Container maxWidth="md">
       <Box sx={{ mt: 4 }}>
         <Typography variant="h4" gutterBottom>
-          Resumes
+          Мои резюме
         </Typography>
         <Button variant="contained" sx={{ mb: 2 }} onClick={() => navigate('/resume/new')}>
-          Create Resume
+          Создать резюме
         </Button>
         <List>
           {resumes.map(resume => (
@@ -59,12 +66,29 @@ const Resume = () => {
                 <IconButton edge="end" aria-label="edit" onClick={() => navigate(`/resume/edit/${resume.id}`)}>
                   <Edit />
                 </IconButton>
+                <IconButton edge="end" aria-label="share" onClick={() => copyLink(resume.id)}>
+                  <Share />
+                </IconButton>
                 <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(resume.id)}>
                   <Delete />
                 </IconButton>
               </>
             }>
-              <ListItemText primary={`Template: ${resume.template}`} secondary={`Created: ${new Date(resume.created_at).toLocaleDateString()}`} />
+              <ListItemText
+                primary={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="subtitle1">
+                      Резюме от {new Date(resume.created_at).toLocaleDateString()}
+                    </Typography>
+                    {resume.is_public ? (
+                      <Chip icon={<Public />} label="Публичное" size="small" color="success" />
+                    ) : (
+                      <Chip icon={<Lock />} label="Скрытое" size="small" color="default" />
+                    )}
+                  </Box>
+                }
+                secondary={`Шаблон: ${resume.template}`}
+              />
             </ListItem>
           ))}
         </List>

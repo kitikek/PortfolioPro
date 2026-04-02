@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
+const response = require('../utils/response');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -65,4 +66,16 @@ const getMe = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe };
+const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) return response.error(res, 'Файл не загружен', 400);
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    await User.update({ avatar_url: avatarUrl }, { where: { id: req.user.id } });
+    response.success(res, { avatar_url: avatarUrl });
+  } catch (error) {
+    console.error(error);
+    response.error(res, 'Ошибка загрузки', 500);
+  }
+};
+
+module.exports = { register, login, getMe, uploadAvatar };

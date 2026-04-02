@@ -23,6 +23,10 @@ const Resume = sequelize.define('Resume', {
     type: DataTypes.JSON,
     allowNull: false,
   },
+  is_public: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
   pdf_url: {
     type: DataTypes.STRING,
   },
