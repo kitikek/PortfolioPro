@@ -22,6 +22,27 @@ const Project = sequelize.define('Project', {
   description: {
     type: DataTypes.TEXT,
   },
+  role: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  team: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    comment: 'Название команды или список участников',
+  },
+  organization: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  start_date: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+  },
+  end_date: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+  },
   images: {
     type: DataTypes.JSON,
     defaultValue: [],
