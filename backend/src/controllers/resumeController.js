@@ -15,16 +15,16 @@ const getResumes = async (req, res) => {
 // Создать резюме
 const createResume = async (req, res) => {
   try {
-    const { template, data, is_public, avatar_url } = req.body;
+    const { title, template, data, is_public } = req.body;
     if (!data) {
       return response.error(res, 'Данные резюме обязательны', 400);
     }
     const resume = await Resume.create({
       user_id: req.user.id,
+      title: title || 'Без названия',
       template: template || 'default',
       data,
       is_public: is_public !== undefined ? is_public : false,
-      avatar_url: avatar_url || null,
     });
     response.success(res, resume, 201);
   } catch (error) {
@@ -37,16 +37,16 @@ const createResume = async (req, res) => {
 const updateResume = async (req, res) => {
   try {
     const { id } = req.params;
-    const { template, data, is_public, avatar_url } = req.body;
+    const { title, template, data, is_public } = req.body;
     const resume = await Resume.findOne({ where: { id, user_id: req.user.id } });
     if (!resume) {
       return response.error(res, 'Резюме не найдено', 404);
     }
     await resume.update({
+      title: title !== undefined ? title : resume.title,
       template: template !== undefined ? template : resume.template,
       data: data !== undefined ? data : resume.data,
       is_public: is_public !== undefined ? is_public : resume.is_public,
-      avatar_url: avatar_url !== undefined ? avatar_url : resume.avatar_url,
     });
     response.success(res, resume);
   } catch (error) {
@@ -96,7 +96,7 @@ const getPublicResume = async (req, res) => {
     console.error(error);
     response.error(res, 'Ошибка сервера', 500);
   }
-}
+};
 
 const publishResume = async (req, res) => {
   try {

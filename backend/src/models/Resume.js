@@ -15,6 +15,11 @@ const Resume = sequelize.define('Resume', {
       key: 'id',
     },
   },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'Без названия',
+  },
   template: {
     type: DataTypes.STRING,
     defaultValue: 'default',

@@ -91,17 +91,17 @@ async function seed() {
 
     // Создаём резюме (пустое, можно заполнить позже)
     await Resume.create({
-    user_id: user.id,
-    title: 'Тестовое резюме',
-    template: 'default',
-    data: {
+      user_id: user.id,
+      title: 'Моё первое резюме',
+      template: 'default',
+      data: {
         personal: { name: user.full_name, email: user.email },
         education: [],
         experience: [],
         skills: skills.map(s => ({ name: s.name, level: s.level }))
-    }
+      }
     });
-    console.log('✅ Создано резюме');
+    console.log('✅ Создано резюме с названием');
 
     console.log('\n🎉 Сидирование завершено успешно!');
     console.log('Тестовые данные:');

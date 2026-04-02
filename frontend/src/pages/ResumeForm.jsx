@@ -13,6 +13,7 @@ const ResumeForm = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
+  const [title, setTitle] = useState('');               // <-- НОВОЕ СОСТОЯНИЕ
   const [template, setTemplate] = useState('default');
   const [isPublic, setIsPublic] = useState(false);
   const [personal, setPersonal] = useState({
@@ -36,14 +37,12 @@ const ResumeForm = () => {
 
     const loadData = async () => {
       try {
-        // Загружаем пользователя, навыки, проекты
         const [userRes, skillsRes, projectsRes] = await Promise.all([
           axios.get('/api/v1/auth/me', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('/api/v1/skills', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('/api/v1/projects/me', { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
-        // Пользователь
         const user = userRes.data.success ? userRes.data.data : userRes.data;
         setPersonal({
           full_name: user.full_name || '',
@@ -57,9 +56,8 @@ const ResumeForm = () => {
         setAvatarPreview(user.avatar_url || '');
         setBio(user.bio || '');
 
-        // Навыки
         let skillsList = [];
-        let initialSelected = {}; // объявляем здесь, чтобы была доступна в блоке if (id)
+        let initialSelected = {};
         if (skillsRes.data.success && Array.isArray(skillsRes.data.data)) {
           skillsList = skillsRes.data.data;
           setSkills(skillsList);
@@ -73,7 +71,6 @@ const ResumeForm = () => {
           setSelectedSkills(initialSelected);
         }
 
-        // Проекты
         let projectsList = [];
         let initialSelectedProj = {};
         if (projectsRes.data.success && Array.isArray(projectsRes.data.data)) {
@@ -88,13 +85,13 @@ const ResumeForm = () => {
           setSelectedProjects(initialSelectedProj);
         }
 
-        // Если редактируем существующее резюме
         if (id) {
           const resumeRes = await axios.get(`/api/v1/resumes/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (resumeRes.data.success) {
             const resume = resumeRes.data.data;
+            setTitle(resume.title || '');               // <-- загружаем название
             setTemplate(resume.template);
             setIsPublic(resume.is_public);
             const data = resume.data || {};
@@ -102,7 +99,6 @@ const ResumeForm = () => {
             if (data.personal) setPersonal(prev => ({ ...prev, ...data.personal }));
             if (data.bio !== undefined) setBio(data.bio);
 
-            // Навыки
             if (data.skills && skillsList.length) {
               const updatedSelected = { ...initialSelected };
               data.skills.forEach(s => {
@@ -114,7 +110,6 @@ const ResumeForm = () => {
               setSelectedSkills(updatedSelected);
             }
 
-            // Проекты
             if (data.projects && projectsList.length) {
               const updatedSelectedProj = { ...initialSelectedProj };
               data.projects.forEach(p => {
@@ -125,7 +120,6 @@ const ResumeForm = () => {
               setSelectedProjects(updatedSelectedProj);
             }
 
-            // Восстановление софт-скиллов
             let loadedSoftSkills = [];
             if (data.softSkills) {
               if (Array.isArray(data.softSkills)) {
@@ -151,7 +145,6 @@ const ResumeForm = () => {
     loadData();
   }, [token, navigate, id]);
 
-  // Обработчики
   const handlePersonalChange = (field) => (e) => {
     setPersonal({ ...personal, [field]: e.target.value });
   };
@@ -237,6 +230,7 @@ const ResumeForm = () => {
       };
 
       const payload = {
+        title: title.trim() || 'Без названия',   // <-- передаём название
         template,
         is_public: isPublic,
         data: resumeData
@@ -268,6 +262,21 @@ const ResumeForm = () => {
         </Typography>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
+            {/* НОВЫЙ БЛОК: Название резюме */}
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Название резюме"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  margin="normal"
+                  required
+                  helperText="Например: «Резюме для фронтенд‑разработчика»"
+                />
+              </Paper>
+            </Grid>
+
             {/* Шаблон и публичность */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>

@@ -21,6 +21,7 @@ const Resume = () => {
         })
         if (res.data && res.data.success && Array.isArray(res.data.data)) {
           setResumes(res.data.data)
+          console.log('📄 Данные резюме:', res.data.data) // для отладки
         } else {
           console.error('Неожиданный формат ответа:', res.data)
           setResumes([])
@@ -50,6 +51,13 @@ const Resume = () => {
     alert('Ссылка скопирована')
   }
 
+  const formatDate = (dateValue) => {
+    if (!dateValue) return 'Дата неизвестна'
+    const d = new Date(dateValue)
+    if (isNaN(d.getTime())) return 'Дата неизвестна'
+    return d.toLocaleDateString()
+  }
+
   return (
     <Container maxWidth="md">
       <Box sx={{ mt: 4 }}>
@@ -76,9 +84,9 @@ const Resume = () => {
             }>
               <ListItemText
                 primary={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="subtitle1">
-                      Резюме от {new Date(resume.created_at).toLocaleDateString()}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Typography variant="subtitle1" component="span">
+                      {resume.title || 'Без названия'}
                     </Typography>
                     {resume.is_public ? (
                       <Chip icon={<Public />} label="Публичное" size="small" color="success" />
@@ -87,7 +95,17 @@ const Resume = () => {
                     )}
                   </Box>
                 }
-                secondary={`Шаблон: ${resume.template}`}
+                secondary={
+                  <>
+                    <Typography variant="body2" component="span">
+                      Шаблон: {resume.template}
+                    </Typography>
+                    <br />
+                    <Typography variant="caption" component="span" color="textSecondary">
+                      Создано: {formatDate(resume.created_at || resume.createdAt)}
+                    </Typography>
+                  </>
+                }
               />
             </ListItem>
           ))}
