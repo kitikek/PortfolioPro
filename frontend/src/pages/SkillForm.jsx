@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
-import { Container, TextField, Button, Typography, Box } from '@mui/material'
+import { Container, TextField, Button, Typography, Box, Autocomplete } from '@mui/material'
 
 const SkillForm = () => {
   const { id } = useParams()
@@ -9,7 +9,26 @@ const SkillForm = () => {
   const [name, setName] = useState('')
   const [level, setLevel] = useState(3)
   const [category, setCategory] = useState('')
+  const [existingCategories, setExistingCategories] = useState([])
   const token = localStorage.getItem('token')
+
+  // Загружаем все категории из существующих навыков
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get('/api/v1/skills', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (res.data.success && Array.isArray(res.data.data)) {
+          const categories = [...new Set(res.data.data.map(s => s.category).filter(c => c && c.trim()))]
+          setExistingCategories(categories)
+        }
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    fetchCategories()
+  }, [token])
 
   useEffect(() => {
     if (id) {
@@ -40,7 +59,7 @@ const SkillForm = () => {
         alert('Уровень должен быть числом от 1 до 10')
         return
       }
-      const payload = { name, level: lvl, category: category || null }
+      const payload = { name, level: lvl, category: category.trim() || null }
       if (id) {
         await axios.put(`/api/v1/skills/${id}`, payload, {
           headers: { Authorization: `Bearer ${token}` }
@@ -87,12 +106,20 @@ const SkillForm = () => {
             inputProps={{ min: 1, max: 10 }}
             required
           />
-          <TextField
+          <Autocomplete
             fullWidth
-            label="Категория"
+            freeSolo
+            options={existingCategories}
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            margin="normal"
+            onInputChange={(event, newValue) => setCategory(newValue)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Категория"
+                margin="normal"
+                helperText="Выберите существующую или введите новую"
+              />
+            )}
           />
           <Button type="submit" variant="contained" sx={{ mt: 2 }}>
             Сохранить
