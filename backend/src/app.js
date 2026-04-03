@@ -8,6 +8,8 @@ const portfolioRoutes = require('./routes/portfolioRoutes');
 const projectRoutes = require('./routes/projectRoutes');
 const skillRoutes = require('./routes/skillRoutes');
 const resumeRoutes = require('./routes/resumeRoutes');
+const experienceRoutes = require('./routes/experienceRoutes');
+const educationRoutes = require('./routes/educationRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -19,6 +21,8 @@ app.use('/api/v1/portfolios', portfolioRoutes);
 app.use('/api/v1/projects', projectRoutes);
 app.use('/api/v1/skills', skillRoutes);
 app.use('/api/v1/resumes', resumeRoutes);
+app.use('/api/v1/experiences', experienceRoutes);
+app.use('/api/v1/educations', educationRoutes);
 
 // Статическая раздача файлов (если используется)
 app.use('/uploads', express.static('uploads'));

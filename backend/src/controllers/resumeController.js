@@ -1,4 +1,5 @@
-const { Resume } = require('../models');
+// backend/src/controllers/resumeController.js
+const { Resume, Education, Experience } = require('../models');
 const response = require('../utils/response');
 
 // Получить все резюме пользователя
@@ -15,16 +16,38 @@ const getResumes = async (req, res) => {
 // Создать резюме
 const createResume = async (req, res) => {
   try {
-    const { title, template, data, is_public } = req.body;
+    const { title, template, data, is_public, education_ids, experience_ids } = req.body;
     if (!data) {
       return response.error(res, 'Данные резюме обязательны', 400);
     }
+    
+    // Если переданы education_ids, загружаем полные записи и сохраняем в data.educations
+    let educationsData = [];
+    if (education_ids && education_ids.length) {
+      const educations = await Education.findAll({ where: { id: education_ids, user_id: req.user.id } });
+      educationsData = educations.map(e => e.toJSON());
+    }
+    
+    let experiencesData = [];
+    if (experience_ids && experience_ids.length) {
+      const experiences = await Experience.findAll({ where: { id: experience_ids, user_id: req.user.id } });
+      experiencesData = experiences.map(e => e.toJSON());
+    }
+    
+    const resumeData = {
+      ...data,
+      educations: educationsData,
+      experiences: experiencesData,
+    };
+    
     const resume = await Resume.create({
       user_id: req.user.id,
       title: title || 'Без названия',
       template: template || 'default',
-      data,
+      data: resumeData,
       is_public: is_public !== undefined ? is_public : false,
+      education_ids: education_ids || [],
+      experience_ids: experience_ids || [],
     });
     response.success(res, resume, 201);
   } catch (error) {
@@ -37,16 +60,46 @@ const createResume = async (req, res) => {
 const updateResume = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, template, data, is_public } = req.body;
+    const { title, template, data, is_public, education_ids, experience_ids } = req.body;
     const resume = await Resume.findOne({ where: { id, user_id: req.user.id } });
     if (!resume) {
       return response.error(res, 'Резюме не найдено', 404);
     }
+    
+    // Обновляем копии данных в data.educations и data.experiences
+    let educationsData = resume.data?.educations || [];
+    if (education_ids !== undefined) {
+      if (education_ids.length) {
+        const educations = await Education.findAll({ where: { id: education_ids, user_id: req.user.id } });
+        educationsData = educations.map(e => e.toJSON());
+      } else {
+        educationsData = [];
+      }
+    }
+    
+    let experiencesData = resume.data?.experiences || [];
+    if (experience_ids !== undefined) {
+      if (experience_ids.length) {
+        const experiences = await Experience.findAll({ where: { id: experience_ids, user_id: req.user.id } });
+        experiencesData = experiences.map(e => e.toJSON());
+      } else {
+        experiencesData = [];
+      }
+    }
+    
+    const updatedData = {
+      ...(data || resume.data),
+      educations: educationsData,
+      experiences: experiencesData,
+    };
+    
     await resume.update({
       title: title !== undefined ? title : resume.title,
       template: template !== undefined ? template : resume.template,
-      data: data !== undefined ? data : resume.data,
+      data: updatedData,
       is_public: is_public !== undefined ? is_public : resume.is_public,
+      education_ids: education_ids !== undefined ? education_ids : resume.education_ids,
+      experience_ids: experience_ids !== undefined ? experience_ids : resume.experience_ids,
     });
     response.success(res, resume);
   } catch (error) {

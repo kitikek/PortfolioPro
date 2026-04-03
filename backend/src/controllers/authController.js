@@ -66,6 +66,23 @@ const getMe = async (req, res) => {
   }
 };
 
+const updateMe = async (req, res) => {
+  try {
+    const { full_name, bio, contacts } = req.body;
+    await User.update(
+      { full_name, bio, contacts },
+      { where: { id: req.user.id } }
+    );
+    const updatedUser = await User.findByPk(req.user.id, {
+      attributes: { exclude: ['password_hash'] },
+    });
+    response.success(res, updatedUser);
+  } catch (error) {
+    console.error(error);
+    response.error(res, 'Ошибка обновления профиля', 500);
+  }
+};
+
 const uploadAvatar = async (req, res) => {
   try {
     if (!req.file) return response.error(res, 'Файл не загружен', 400);
@@ -78,4 +95,4 @@ const uploadAvatar = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe, uploadAvatar };
+module.exports = { register, login, getMe, updateMe, uploadAvatar };

@@ -12,6 +12,8 @@ db.Portfolio = require('./Portfolio');
 db.Project = require('./Project');
 db.Skill = require('./Skill');
 db.Resume = require('./Resume');
+db.Education = require('./Education');
+db.Experience = require('./Experience');
 
 // Ассоциации
 db.User.hasMany(db.Portfolio, { foreignKey: 'user_id', as: 'Portfolios' });
@@ -25,5 +27,11 @@ db.Skill.belongsTo(db.User, { foreignKey: 'user_id', as: 'User' });
 
 db.User.hasOne(db.Resume, { foreignKey: 'user_id', as: 'Resume' });
 db.Resume.belongsTo(db.User, { foreignKey: 'user_id', as: 'User' });
+
+db.User.hasMany(db.Education, { foreignKey: 'user_id', as: 'Educations' });
+db.Education.belongsTo(db.User, { foreignKey: 'user_id', as: 'User' });
+
+db.User.hasMany(db.Experience, { foreignKey: 'user_id', as: 'Experiences' });
+db.Experience.belongsTo(db.User, { foreignKey: 'user_id', as: 'User' });
 
 module.exports = db;

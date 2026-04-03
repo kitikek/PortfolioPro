@@ -35,6 +35,14 @@ const Resume = sequelize.define('Resume', {
   pdf_url: {
     type: DataTypes.STRING,
   },
+  education_ids: {
+    type: DataTypes.JSON,
+    defaultValue: [],
+  },
+  experience_ids: {
+    type: DataTypes.JSON,
+    defaultValue: [],
+  },
 }, {
   timestamps: true,
   underscored: true,

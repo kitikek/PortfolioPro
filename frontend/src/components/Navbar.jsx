@@ -1,3 +1,4 @@
+// frontend/src/components/Navbar.jsx
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -19,16 +20,17 @@ const Navbar = () => {
         <Box>
           {token ? (
             <>
-              <Button color="inherit" component={Link} to="/">Dashboard</Button>
-              <Button color="inherit" component={Link} to="/projects">Projects</Button>
-              <Button color="inherit" component={Link} to="/skills">Skills</Button>
-              <Button color="inherit" component={Link} to="/resume">Resume</Button>
-              <Button color="inherit" onClick={handleLogout}>Logout</Button>
+              <Button color="inherit" component={Link} to="/">Главная</Button>
+              <Button color="inherit" component={Link} to="/profile">Профиль</Button>
+              <Button color="inherit" component={Link} to="/projects">Проекты</Button>
+              <Button color="inherit" component={Link} to="/skills">Навыки</Button>
+              <Button color="inherit" component={Link} to="/resume">Резюме</Button>
+              <Button color="inherit" onClick={handleLogout}>Выйти</Button>
             </>
           ) : (
             <>
-              <Button color="inherit" component={Link} to="/login">Login</Button>
-              <Button color="inherit" component={Link} to="/register">Register</Button>
+              <Button color="inherit" component={Link} to="/login">Вход</Button>
+              <Button color="inherit" component={Link} to="/register">Регистрация</Button>
             </>
           )}
         </Box>

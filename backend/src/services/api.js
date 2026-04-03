@@ -1,0 +1,37 @@
+// frontend/src/services/api.js
+import axios from 'axios'
+
+const api = axios.create({
+  baseURL: '/api/v1',
+  headers: { 'Content-Type': 'application/json' }
+})
+
+// Добавляем токен в каждый запрос
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+// Пользователь
+export const getMe = () => api.get('/auth/me')
+export const updateUser = (data) => api.put('/users/me', data)  // если у вас есть такой эндпоинт, иначе используйте /auth/me с PUT
+export const uploadAvatar = (formData) => api.post('/auth/upload-avatar', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' }
+})
+
+// Образование
+export const getEducations = () => api.get('/educations')
+export const createEducation = (data) => api.post('/educations', data)
+export const updateEducation = (id, data) => api.put(`/educations/${id}`, data)
+export const deleteEducation = (id) => api.delete(`/educations/${id}`)
+
+// Опыт
+export const getExperiences = () => api.get('/experiences')
+export const createExperience = (data) => api.post('/experiences', data)
+export const updateExperience = (id, data) => api.put(`/experiences/${id}`, data)
+export const deleteExperience = (id) => api.delete(`/experiences/${id}`)
+
+export default api
