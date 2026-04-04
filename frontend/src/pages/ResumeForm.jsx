@@ -42,6 +42,7 @@ const ResumeForm = () => {
 
     const loadData = async () => {
       try {
+        // Загружаем все необходимые данные
         const [userRes, skillsRes, projectsRes, eduRes, expRes, softRes] = await Promise.all([
           axios.get('/api/v1/auth/me', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('/api/v1/skills', { headers: { Authorization: `Bearer ${token}` } }),
@@ -67,67 +68,69 @@ const ResumeForm = () => {
 
         // Hard Skills
         let skillsList = [];
-        let initialSelectedSkills = {};
         if (skillsRes.data.success && Array.isArray(skillsRes.data.data)) {
           skillsList = skillsRes.data.data;
           setSkills(skillsList);
-          skillsList.forEach(skill => {
-            initialSelectedSkills[skill.id] = { name: skill.name, level: skill.level, included: true };
-          });
-          setSelectedSkills(initialSelectedSkills);
         }
 
-        // Projects – с учётом is_published
+        // Projects
         let projectsList = [];
-        let initialSelectedProj = {};
         if (projectsRes.data.success && Array.isArray(projectsRes.data.data)) {
           projectsList = projectsRes.data.data;
           setProjects(projectsList);
-          projectsList.forEach(proj => {
-            initialSelectedProj[proj.id] = { 
-              title: proj.title, 
-              included: proj.is_published ? true : false,
-              is_published: proj.is_published 
-            };
-          });
-          setSelectedProjects(initialSelectedProj);
         }
 
         // Educations
         let eduList = [];
-        let initialSelectedEdu = {};
         if (eduRes.data.success && Array.isArray(eduRes.data.data)) {
           eduList = eduRes.data.data;
           setEducations(eduList);
-          eduList.forEach(edu => {
-            initialSelectedEdu[edu.id] = { included: true };
-          });
-          setSelectedEducations(initialSelectedEdu);
         }
 
         // Experiences
         let expList = [];
-        let initialSelectedExp = {};
         if (expRes.data.success && Array.isArray(expRes.data.data)) {
           expList = expRes.data.data;
           setExperiences(expList);
-          expList.forEach(exp => {
-            initialSelectedExp[exp.id] = { included: true };
-          });
-          setSelectedExperiences(initialSelectedExp);
         }
 
-        // Soft Skills – по умолчанию все НЕ выбраны
+        // Soft Skills
         let softSkillsData = [];
-        let initialSelectedSoft = {};
         if (softRes.data.success && Array.isArray(softRes.data.data)) {
           softSkillsData = softRes.data.data;
           setSoftSkillsList(softSkillsData);
-          softSkillsData.forEach(ss => {
-            initialSelectedSoft[ss.id] = { name: ss.name, included: false };
-          });
-          setSelectedSoftSkills(initialSelectedSoft);
         }
+
+        // === Инициализация состояний выбора ===
+        // По умолчанию все false (будут переопределены при редактировании или включены при создании)
+        let initialSelectedSkills = {};
+        skillsList.forEach(skill => {
+          initialSelectedSkills[skill.id] = { name: skill.name, level: skill.level, included: false };
+        });
+
+        let initialSelectedProjects = {};
+        projectsList.forEach(proj => {
+          initialSelectedProjects[proj.id] = {
+            title: proj.title,
+            included: false,
+            is_published: proj.is_published
+          };
+        });
+
+        let initialSelectedEducations = {};
+        eduList.forEach(edu => {
+          initialSelectedEducations[edu.id] = { included: false };
+        });
+
+        let initialSelectedExperiences = {};
+        expList.forEach(exp => {
+          initialSelectedExperiences[exp.id] = { included: false };
+        });
+
+        let initialSelectedSoftSkills = {};
+        softSkillsData.forEach(ss => {
+          initialSelectedSoftSkills[ss.id] = { name: ss.name, included: false };
+        });
 
         // Если редактируем резюме – загружаем его данные и обновляем выбранные состояния
         if (id) {
@@ -145,68 +148,83 @@ const ResumeForm = () => {
             if (data.bio !== undefined) setBio(data.bio);
 
             // Hard Skills
-            if (data.skills && skillsList.length) {
-              const updatedSelected = { ...initialSelectedSkills };
+            if (data.skills && Array.isArray(data.skills)) {
               data.skills.forEach(s => {
-                if (updatedSelected[s.id]) {
-                  updatedSelected[s.id].included = s.included;
-                  if (s.level) updatedSelected[s.id].level = s.level;
+                if (initialSelectedSkills[s.id]) {
+                  initialSelectedSkills[s.id].included = s.included;
+                  if (s.level) initialSelectedSkills[s.id].level = s.level;
                 }
               });
-              setSelectedSkills(updatedSelected);
             }
 
-            // Projects – учитываем is_published
-            if (data.projects && projectsList.length) {
-              const updatedSelectedProj = { ...initialSelectedProj };
+            // Projects (скрытые проекты нельзя включить)
+            if (data.projects && Array.isArray(data.projects)) {
               data.projects.forEach(p => {
                 const project = projectsList.find(pr => pr.id === p.id);
                 if (project && !project.is_published) {
-                  // скрытый проект не может быть включён
-                  updatedSelectedProj[p.id].included = false;
-                } else if (updatedSelectedProj[p.id]) {
-                  updatedSelectedProj[p.id].included = p.included;
+                  initialSelectedProjects[p.id].included = false;
+                } else if (initialSelectedProjects[p.id]) {
+                  initialSelectedProjects[p.id].included = p.included;
                 }
               });
-              setSelectedProjects(updatedSelectedProj);
             }
 
             // Educations
-            if (data.educations && eduList.length) {
-              const updatedSelectedEdu = { ...initialSelectedEdu };
-              data.educations.forEach(e => {
-                if (updatedSelectedEdu[e.id]) {
-                  updatedSelectedEdu[e.id].included = e.included;
+            if (data.educations && Array.isArray(data.educations)) {
+              data.educations.forEach(edu => {
+                if (initialSelectedEducations[edu.id]) {
+                  initialSelectedEducations[edu.id].included = true;
                 }
               });
-              setSelectedEducations(updatedSelectedEdu);
             }
 
             // Experiences
-            if (data.experiences && expList.length) {
-              const updatedSelectedExp = { ...initialSelectedExp };
-              data.experiences.forEach(e => {
-                if (updatedSelectedExp[e.id]) {
-                  updatedSelectedExp[e.id].included = e.included;
+            if (data.experiences && Array.isArray(data.experiences)) {
+              data.experiences.forEach(exp => {
+                if (initialSelectedExperiences[exp.id]) {
+                  initialSelectedExperiences[exp.id].included = true;
                 }
               });
-              setSelectedExperiences(updatedSelectedExp);
             }
 
-            // Soft Skills – обновляем выбранные на основе сохранённых
-            if (data.softSkills && data.softSkills.length) {
-              const updatedSelectedSoft = { ...initialSelectedSoft };
+            // Soft Skills
+            if (data.softSkills && Array.isArray(data.softSkills)) {
               data.softSkills.forEach(ss => {
-                if (updatedSelectedSoft[ss.id]) {
-                  updatedSelectedSoft[ss.id].included = true;
+                if (initialSelectedSoftSkills[ss.id]) {
+                  initialSelectedSoftSkills[ss.id].included = true;
                 } else {
-                  updatedSelectedSoft[ss.id] = { name: ss.name, included: true };
+                  initialSelectedSoftSkills[ss.id] = { name: ss.name, included: true };
                 }
               });
-              setSelectedSoftSkills(updatedSelectedSoft);
             }
           }
+        } else {
+          // Новое резюме – всё включено по умолчанию
+          Object.keys(initialSelectedSkills).forEach(key => {
+            initialSelectedSkills[key].included = true;
+          });
+          Object.keys(initialSelectedProjects).forEach(key => {
+            if (initialSelectedProjects[key].is_published) {
+              initialSelectedProjects[key].included = true;
+            }
+          });
+          Object.keys(initialSelectedEducations).forEach(key => {
+            initialSelectedEducations[key].included = true;
+          });
+          Object.keys(initialSelectedExperiences).forEach(key => {
+            initialSelectedExperiences[key].included = true;
+          });
+          Object.keys(initialSelectedSoftSkills).forEach(key => {
+            initialSelectedSoftSkills[key].included = true;
+          });
         }
+
+        // Устанавливаем состояния
+        setSelectedSkills(initialSelectedSkills);
+        setSelectedProjects(initialSelectedProjects);
+        setSelectedEducations(initialSelectedEducations);
+        setSelectedExperiences(initialSelectedExperiences);
+        setSelectedSoftSkills(initialSelectedSoftSkills);
         setLoading(false);
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
@@ -217,6 +235,7 @@ const ResumeForm = () => {
     loadData();
   }, [token, navigate, id]);
 
+  // Обработчики переключения чекбоксов
   const handlePersonalChange = (field) => (e) => setPersonal({ ...personal, [field]: e.target.value });
   const handleSkillToggle = (skillId) => setSelectedSkills(prev => ({ ...prev, [skillId]: { ...prev[skillId], included: !prev[skillId]?.included } }));
   const handleProjectToggle = (projectId) => setSelectedProjects(prev => ({ ...prev, [projectId]: { ...prev[projectId], included: !prev[projectId]?.included } }));
@@ -247,6 +266,7 @@ const ResumeForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Собираем выбранные записи
       const fullEducations = Object.entries(selectedEducations)
         .filter(([_, val]) => val.included)
         .map(([id]) => educations.find(edu => edu.id === parseInt(id)))
@@ -461,7 +481,7 @@ const ResumeForm = () => {
               </Paper>
             </Grid>
 
-            {/* Проекты – с поддержкой скрытых */}
+            {/* Проекты */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6">Проекты</Typography>

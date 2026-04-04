@@ -17,18 +17,16 @@ const getResumes = async (req, res) => {
 const createResume = async (req, res) => {
   try {
     const { title, template, data, is_public, education_ids, experience_ids } = req.body;
-    if (!data) {
-      return response.error(res, 'Данные резюме обязательны', 400);
-    }
+    if (!data) return response.error(res, 'Данные резюме обязательны', 400);
     
-    // Если переданы education_ids, загружаем полные записи и сохраняем в data.educations
-    let educationsData = [];
+    // Берём education из data, если нет education_ids
+    let educationsData = data.educations || [];
     if (education_ids && education_ids.length) {
       const educations = await Education.findAll({ where: { id: education_ids, user_id: req.user.id } });
       educationsData = educations.map(e => e.toJSON());
     }
     
-    let experiencesData = [];
+    let experiencesData = data.experiences || [];
     if (experience_ids && experience_ids.length) {
       const experiences = await Experience.findAll({ where: { id: experience_ids, user_id: req.user.id } });
       experiencesData = experiences.map(e => e.toJSON());
@@ -62,12 +60,10 @@ const updateResume = async (req, res) => {
     const { id } = req.params;
     const { title, template, data, is_public, education_ids, experience_ids } = req.body;
     const resume = await Resume.findOne({ where: { id, user_id: req.user.id } });
-    if (!resume) {
-      return response.error(res, 'Резюме не найдено', 404);
-    }
+    if (!resume) return response.error(res, 'Резюме не найдено', 404);
     
-    // Обновляем копии данных в data.educations и data.experiences
-    let educationsData = resume.data?.educations || [];
+    // Определяем итоговые массивы для образования
+    let educationsData;
     if (education_ids !== undefined) {
       if (education_ids.length) {
         const educations = await Education.findAll({ where: { id: education_ids, user_id: req.user.id } });
@@ -75,9 +71,12 @@ const updateResume = async (req, res) => {
       } else {
         educationsData = [];
       }
+    } else {
+      // Если education_ids не передан, берём из переданного data, иначе из старых данных
+      educationsData = (data && data.educations) ? data.educations : (resume.data?.educations || []);
     }
     
-    let experiencesData = resume.data?.experiences || [];
+    let experiencesData;
     if (experience_ids !== undefined) {
       if (experience_ids.length) {
         const experiences = await Experience.findAll({ where: { id: experience_ids, user_id: req.user.id } });
@@ -85,6 +84,8 @@ const updateResume = async (req, res) => {
       } else {
         experiencesData = [];
       }
+    } else {
+      experiencesData = (data && data.experiences) ? data.experiences : (resume.data?.experiences || []);
     }
     
     const updatedData = {
