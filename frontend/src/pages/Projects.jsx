@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Container, Typography, Box, Button, List, ListItem, ListItemText, IconButton, Chip, Avatar } from '@mui/material'
-import { Delete, Edit, Add } from '@mui/icons-material'
+import { Delete, Edit, Add, Share, Public, Lock } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
@@ -54,6 +54,13 @@ const Projects = () => {
     navigate(`/projects/${id}`)
   }
 
+  const copyLink = (id, e) => {
+    e.stopPropagation()
+    const url = `${window.location.origin}/project/public/${id}`
+    navigator.clipboard.writeText(url)
+    alert('Ссылка на проект скопирована')
+  }
+
   return (
     <Container maxWidth="md">
       <Box sx={{ mt: 4 }}>
@@ -89,6 +96,11 @@ const Projects = () => {
                   <IconButton edge="end" aria-label="edit" onClick={(e) => handleEdit(project.id, e)} sx={{ mr: 1 }}>
                     <Edit />
                   </IconButton>
+                  {project.is_published && (
+                    <IconButton edge="end" aria-label="share" onClick={(e) => copyLink(project.id, e)} sx={{ mr: 1 }}>
+                      <Share />
+                    </IconButton>
+                  )}
                   <IconButton edge="end" aria-label="delete" onClick={(e) => handleDelete(project.id, e)}>
                     <Delete />
                   </IconButton>
@@ -103,10 +115,21 @@ const Projects = () => {
                 </Avatar>
               )}
               <ListItemText
-                primary={project.title}
+                primary={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Typography variant="subtitle1" component="span">
+                      {project.title}
+                    </Typography>
+                    {project.is_published ? (
+                      <Chip icon={<Public />} label="Опубликован" size="small" color="success" />
+                    ) : (
+                      <Chip icon={<Lock />} label="Скрыт" size="small" color="default" />
+                    )}
+                  </Box>
+                }
                 secondary={
                   <>
-                    <Typography component="span" variant="body2" color="textSecondary" sx={{ display: 'block' }}>
+                    <Typography variant="body2" color="textSecondary" component="span" sx={{ display: 'block', mb: 1 }}>
                       {project.description ? project.description.slice(0, 120) + (project.description.length > 120 ? '…' : '') : 'Нет описания'}
                     </Typography>
                     {project.technologies && project.technologies.length > 0 && (
@@ -121,6 +144,7 @@ const Projects = () => {
                     )}
                   </>
                 }
+                secondaryTypographyProps={{ component: 'div' }}
               />
             </ListItem>
           ))}

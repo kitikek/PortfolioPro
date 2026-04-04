@@ -206,20 +206,20 @@ const deleteProjectImage = async (req, res) => {
 };
 
 // Получить публичный проект (без авторизации)
-exports.getPublicProject = async (req, res) => {
+const getPublicProject = async (req, res) => {
   try {
     const { id } = req.params;
-    const project = await db.Project.findByPk(id);
+    const project = await Project.findByPk(id);
     if (!project) {
-      return res.status(404).json({ success: false, error: 'Проект не найден' });
+      return response.error(res, 'Проект не найден', 404);
     }
     if (!project.is_published) {
-      return res.status(404).json({ success: false, error: 'Проект не опубликован' });
+      return response.error(res, 'Проект не опубликован', 404);
     }
-    res.json({ success: true, data: project });
+    response.success(res, project);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, error: 'Ошибка загрузки проекта' });
+    response.error(res, 'Ошибка загрузки проекта', 500);
   }
 };
 
@@ -232,4 +232,5 @@ module.exports = {
   getProjectById,
   uploadProjectImage,
   deleteProjectImage,
+  getPublicProject,
 };

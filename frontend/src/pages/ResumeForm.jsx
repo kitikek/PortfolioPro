@@ -1,4 +1,3 @@
-// frontend/src/pages/ResumeForm.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -78,14 +77,18 @@ const ResumeForm = () => {
           setSelectedSkills(initialSelectedSkills);
         }
 
-        // Projects
+        // Projects – с учётом is_published
         let projectsList = [];
         let initialSelectedProj = {};
         if (projectsRes.data.success && Array.isArray(projectsRes.data.data)) {
           projectsList = projectsRes.data.data;
           setProjects(projectsList);
           projectsList.forEach(proj => {
-            initialSelectedProj[proj.id] = { title: proj.title, included: true };
+            initialSelectedProj[proj.id] = { 
+              title: proj.title, 
+              included: proj.is_published ? true : false,
+              is_published: proj.is_published 
+            };
           });
           setSelectedProjects(initialSelectedProj);
         }
@@ -153,11 +156,15 @@ const ResumeForm = () => {
               setSelectedSkills(updatedSelected);
             }
 
-            // Projects
+            // Projects – учитываем is_published
             if (data.projects && projectsList.length) {
               const updatedSelectedProj = { ...initialSelectedProj };
               data.projects.forEach(p => {
-                if (updatedSelectedProj[p.id]) {
+                const project = projectsList.find(pr => pr.id === p.id);
+                if (project && !project.is_published) {
+                  // скрытый проект не может быть включён
+                  updatedSelectedProj[p.id].included = false;
+                } else if (updatedSelectedProj[p.id]) {
                   updatedSelectedProj[p.id].included = p.included;
                 }
               });
@@ -193,13 +200,10 @@ const ResumeForm = () => {
                 if (updatedSelectedSoft[ss.id]) {
                   updatedSelectedSoft[ss.id].included = true;
                 } else {
-                  // если софт-скилл был удалён из общего списка, но нужен в резюме – добавляем его как временный
                   updatedSelectedSoft[ss.id] = { name: ss.name, included: true };
                 }
               });
               setSelectedSoftSkills(updatedSelectedSoft);
-            } else if (data.softSkills && data.softSkills.length === 0) {
-              // все остаются false, что уже установлено
             }
           }
         }
@@ -243,7 +247,6 @@ const ResumeForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Формируем полные объекты для образования и опыта
       const fullEducations = Object.entries(selectedEducations)
         .filter(([_, val]) => val.included)
         .map(([id]) => educations.find(edu => edu.id === parseInt(id)))
@@ -254,10 +257,24 @@ const ResumeForm = () => {
         .map(([id]) => experiences.find(exp => exp.id === parseInt(id)))
         .filter(Boolean);
 
-      // Выбранные софт-скиллы (только те, у которых included === true)
       const softSkillsSelected = Object.entries(selectedSoftSkills)
         .filter(([_, val]) => val.included)
         .map(([id, val]) => ({ id: parseInt(id), name: val.name }));
+
+      const projectsSelected = Object.entries(selectedProjects)
+        .filter(([_, val]) => val.included)
+        .map(([id, val]) => {
+          const fullProject = projects.find(p => p.id === parseInt(id));
+          return {
+            id: parseInt(id),
+            title: fullProject?.title,
+            description: fullProject?.description,
+            technologies: fullProject?.technologies,
+            links: fullProject?.links,
+            is_published: fullProject?.is_published,
+            included: true,
+          };
+        });
 
       const resumeData = {
         personal: {
@@ -276,11 +293,7 @@ const ResumeForm = () => {
           level: skill.level,
           included: skill.included
         })),
-        projects: Object.entries(selectedProjects).map(([id, proj]) => ({
-          id: parseInt(id),
-          title: proj.title,
-          included: proj.included
-        })),
+        projects: projectsSelected,
         educations: fullEducations,
         experiences: fullExperiences,
         softSkills: softSkillsSelected
@@ -448,19 +461,33 @@ const ResumeForm = () => {
               </Paper>
             </Grid>
 
-            {/* Проекты */}
+            {/* Проекты – с поддержкой скрытых */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6">Проекты</Typography>
                 <List>
-                  {projects.map(project => (
-                    <ListItem key={project.id} dense>
-                      <FormControlLabel
-                        control={<Checkbox checked={selectedProjects[project.id]?.included || false} onChange={() => handleProjectToggle(project.id)} />}
-                        label={project.title}
-                      />
-                    </ListItem>
-                  ))}
+                  {projects.map(project => {
+                    const isDisabled = !project.is_published;
+                    return (
+                      <ListItem key={project.id} dense>
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={selectedProjects[project.id]?.included || false}
+                              onChange={() => handleProjectToggle(project.id)}
+                              disabled={isDisabled}
+                            />
+                          }
+                          label={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <span>{project.title}</span>
+                              {isDisabled && <Chip label="Скрытый" size="small" color="error" variant="outlined" />}
+                            </Box>
+                          }
+                        />
+                      </ListItem>
+                    );
+                  })}
                 </List>
               </Paper>
             </Grid>

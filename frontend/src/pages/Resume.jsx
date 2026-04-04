@@ -21,7 +21,6 @@ const Resume = () => {
         })
         if (res.data && res.data.success && Array.isArray(res.data.data)) {
           setResumes(res.data.data)
-          console.log('📄 Данные резюме:', res.data.data) // для отладки
         } else {
           console.error('Неожиданный формат ответа:', res.data)
           setResumes([])
@@ -74,9 +73,11 @@ const Resume = () => {
                 <IconButton edge="end" aria-label="edit" onClick={() => navigate(`/resume/edit/${resume.id}`)}>
                   <Edit />
                 </IconButton>
-                <IconButton edge="end" aria-label="share" onClick={() => copyLink(resume.id)}>
-                  <Share />
-                </IconButton>
+                {resume.is_public && (
+                  <IconButton edge="end" aria-label="share" onClick={() => copyLink(resume.id)}>
+                    <Share />
+                  </IconButton>
+                )}
                 <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(resume.id)}>
                   <Delete />
                 </IconButton>

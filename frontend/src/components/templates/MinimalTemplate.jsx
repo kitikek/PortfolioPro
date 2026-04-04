@@ -1,5 +1,4 @@
-// frontend/src/components/templates/MinimalTemplate.jsx
-import { Box, Typography, Avatar, Divider } from '@mui/material';
+import { Box, Typography, Avatar, Divider, Chip, Button } from '@mui/material';
 
 const MinimalTemplate = ({ resume }) => {
   const { personal, bio, skills, projects, softSkills, educations, experiences } = resume.data;
@@ -69,7 +68,30 @@ const MinimalTemplate = ({ resume }) => {
 
       <Typography variant="h6">Проекты</Typography>
       {projects.filter(p => p.included).map(project => (
-        <Typography key={project.id} variant="body2">{project.title}</Typography>
+        <Box key={project.id} sx={{ mb: 2 }}>
+          <Typography variant="subtitle2">
+            {project.is_published ? (
+              <a href={`/project/public/${project.id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+                {project.title}
+              </a>
+            ) : (
+              project.title
+            )}
+          </Typography>
+          {project.description && <Typography variant="body2" sx={{ mt: 1 }}>{project.description}</Typography>}
+          {project.technologies && project.technologies.length > 0 && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
+              {project.technologies.map(tech => <Chip key={tech} label={tech} size="small" />)}
+            </Box>
+          )}
+          {project.links && (project.links.github || project.links.demo || project.links.other?.length) && (
+            <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {project.links.github && <Button size="small" href={project.links.github} target="_blank">GitHub</Button>}
+              {project.links.demo && <Button size="small" href={project.links.demo} target="_blank">Demo</Button>}
+              {project.links.other?.map((link, idx) => <Button key={idx} size="small" href={link.url} target="_blank">{link.name}</Button>)}
+            </Box>
+          )}
+        </Box>
       ))}
     </Box>
   );

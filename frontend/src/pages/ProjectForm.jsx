@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { 
   Container, TextField, Button, Typography, Box, Grid, Paper, IconButton, 
-  InputAdornment, FormControl, InputLabel, Select, MenuItem, Chip 
+  InputAdornment, FormControl, InputLabel, Select, MenuItem, Chip, Switch, FormControlLabel
 } from '@mui/material'
 import { Add, Delete, CloudUpload } from '@mui/icons-material'
 
@@ -27,6 +27,7 @@ const ProjectForm = () => {
   const [newTech, setNewTech] = useState('')
   const [images, setImages] = useState([])
   const [uploading, setUploading] = useState(false)
+  const [isPublished, setIsPublished] = useState(false)  // новый state
 
   useEffect(() => {
     if (id) {
@@ -49,6 +50,7 @@ const ProjectForm = () => {
             setOtherLinks(proj.links?.other || [])
             setTechnologies(proj.technologies || [])
             setImages(proj.images || [])
+            setIsPublished(proj.is_published || false)   // загружаем статус публикации
           }
         } catch (err) {
           console.error(err)
@@ -132,7 +134,8 @@ const ProjectForm = () => {
           other: otherLinks
         },
         technologies,
-        images
+        images,
+        is_published: isPublished,   // добавляем статус публикации
       }
       if (id) {
         await axios.put(`/api/v1/projects/${id}`, payload, {
@@ -190,6 +193,20 @@ const ProjectForm = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField fullWidth label="Дата окончания" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+            </Grid>
+
+            {/* Переключатель публикации */}
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isPublished}
+                    onChange={(e) => setIsPublished(e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label="Опубликовать проект (доступен по ссылке)"
+              />
             </Grid>
 
             {/* Ссылки */}

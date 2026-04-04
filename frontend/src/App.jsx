@@ -13,6 +13,7 @@ import SkillForm from './pages/SkillForm'
 import ResumeForm from './pages/ResumeForm'
 import PublicResume from './pages/PublicResume'
 import ProjectPage from './pages/ProjectPage'
+import PublicProjectPage from './pages/PublicProjectPage';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
         <Route path="/resume/edit/:id" element={<ResumeForm />} />
         <Route path="/resume/public/:id" element={<PublicResume />} />
         <Route path="/projects/:id" element={<ProjectPage />} />
+        <Route path="/project/public/:id" element={<PublicProjectPage />} />
       </Routes>
     </>
   )
