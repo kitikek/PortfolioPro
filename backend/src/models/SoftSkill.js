@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/sequelize');
 
-const Skill = sequelize.define('Skill', {
+const SoftSkill = sequelize.define('SoftSkill', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -19,20 +19,10 @@ const Skill = sequelize.define('Skill', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  level: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    validate: {
-      min: 1,
-      max: 10,
-    },
-  },
-  category: {
-    type: DataTypes.STRING,
-  },
 }, {
   timestamps: true,
   underscored: true,
+  tableName: 'softskills',   // <-- добавляем эту строку
 });
 
-module.exports = Skill;
+module.exports = SoftSkill;

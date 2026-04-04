@@ -86,7 +86,6 @@ const ProjectForm = () => {
     try {
       let projectId = id
       if (!projectId) {
-        // сначала создаём временный проект? лучше сначала создать проект, потом загружать. Упростим: при создании сначала создаём проект, затем грузим картинки.
         alert('Сначала сохраните проект, затем добавляйте изображения')
         return
       }
@@ -140,7 +139,6 @@ const ProjectForm = () => {
           headers: { Authorization: `Bearer ${token}` }
         })
       } else {
-        // Сначала нужно получить portfolioId
         let portfolioId = null
         const portfoliosRes = await axios.get('/api/v1/portfolios', {
           headers: { Authorization: `Bearer ${token}` }
@@ -153,12 +151,9 @@ const ProjectForm = () => {
           })
           portfolioId = newPortfolio.data.data.id
         }
-        const createRes = await axios.post('/api/v1/projects', { ...payload, portfolioId }, {
+        await axios.post('/api/v1/projects', { ...payload, portfolioId }, {
           headers: { Authorization: `Bearer ${token}` }
         })
-        if (createRes.data.success) {
-          // После создания можно загрузить картинки, но мы уже не можем. Предлагаем пользователю после создания добавить картинки в редактировании.
-        }
       }
       navigate('/projects')
     } catch (err) {
@@ -255,8 +250,16 @@ const ProjectForm = () => {
               </Box>
             </Grid>
 
+            {/* Кнопки */}
             <Grid item xs={12}>
-              <Button type="submit" variant="contained" color="primary">Сохранить</Button>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                <Button variant="outlined" onClick={() => navigate('/projects')}>
+                  Отмена
+                </Button>
+                <Button type="submit" variant="contained" color="primary">
+                  Сохранить
+                </Button>
+              </Box>
             </Grid>
           </Grid>
         </form>

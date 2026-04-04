@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = require('../config/database');
+const sequelize = require('../config/sequelize');
 
 const db = {};
 
@@ -14,6 +14,7 @@ db.Skill = require('./Skill');
 db.Resume = require('./Resume');
 db.Education = require('./Education');
 db.Experience = require('./Experience');
+db.SoftSkill = require('./SoftSkill');
 
 // Ассоциации
 db.User.hasMany(db.Portfolio, { foreignKey: 'user_id', as: 'Portfolios' });
@@ -33,5 +34,8 @@ db.Education.belongsTo(db.User, { foreignKey: 'user_id', as: 'User' });
 
 db.User.hasMany(db.Experience, { foreignKey: 'user_id', as: 'Experiences' });
 db.Experience.belongsTo(db.User, { foreignKey: 'user_id', as: 'User' });
+
+db.User.hasMany(db.SoftSkill, { foreignKey: 'user_id', as: 'SoftSkills' });
+db.SoftSkill.belongsTo(db.User, { foreignKey: 'user_id', as: 'User' });
 
 module.exports = db;

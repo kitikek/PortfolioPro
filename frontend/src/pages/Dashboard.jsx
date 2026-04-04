@@ -32,11 +32,11 @@ const Dashboard = () => {
     <Container maxWidth="md">
       <Box sx={{ mt: 4 }}>
         <Typography variant="h4" gutterBottom>
-          Welcome, {user.full_name}
+          Здравствуйте, {user.full_name}
         </Typography>
         <Card>
           <CardContent>
-            <Typography variant="h6">Profile</Typography>
+            <Typography variant="h6">Профиль</Typography>
             <Typography>Email: {user.email}</Typography>
             <Typography>Bio: {user.bio || 'No bio'}</Typography>
           </CardContent>

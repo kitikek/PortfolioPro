@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const sequelize = require('./config/database');
+const sequelize = require('./config/sequelize');
 const db = require('./models');
 const authRoutes = require('./routes/authRoutes');
 const portfolioRoutes = require('./routes/portfolioRoutes');
@@ -10,6 +10,8 @@ const skillRoutes = require('./routes/skillRoutes');
 const resumeRoutes = require('./routes/resumeRoutes');
 const experienceRoutes = require('./routes/experienceRoutes');
 const educationRoutes = require('./routes/educationRoutes');
+const userRoutes = require('./routes/userRoutes');
+const softSkillRoutes = require('./routes/softSkillRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,6 +25,8 @@ app.use('/api/v1/skills', skillRoutes);
 app.use('/api/v1/resumes', resumeRoutes);
 app.use('/api/v1/experiences', experienceRoutes);
 app.use('/api/v1/educations', educationRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/soft-skills', softSkillRoutes);
 
 // Статическая раздача файлов (если используется)
 app.use('/uploads', express.static('uploads'));
@@ -30,10 +34,7 @@ app.use('/uploads', express.static('uploads'));
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Подключение к MySQL успешно');
-    return db.sequelize.sync({ alter: true });
-  })
-  .then(() => {
-    console.log('✅ Синхронизация БД завершена');
+    // Убираем sync! Миграции уже выполнены.
     app.listen(PORT, () => console.log(`🚀 Сервер запущен на порту ${PORT}`));
   })
   .catch(err => console.error('❌ Ошибка:', err));

@@ -2,7 +2,8 @@
 import { Box, Typography, Avatar, Divider } from '@mui/material';
 
 const MinimalTemplate = ({ resume }) => {
-  const { personal, avatar_url, bio, skills, projects, softSkills, educations, experiences } = resume.data;
+  const { personal, bio, skills, projects, softSkills, educations, experiences } = resume.data;
+  const avatar_url = personal?.avatar_url;
 
   return (
     <Box sx={{ maxWidth: '800px', mx: 'auto', p: 4 }}>
@@ -55,21 +56,21 @@ const MinimalTemplate = ({ resume }) => {
         ))}
       </Box>
 
-      <Typography variant="h6">Проекты</Typography>
-      {projects.filter(p => p.included).map(project => (
-        <Typography key={project.id} variant="body2">{project.title}</Typography>
-      ))}
-
-      {softSkills.length > 0 && (
+      {softSkills && softSkills.length > 0 && (
         <>
           <Typography variant="h6">Софт-скиллы</Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {softSkills.map((skill, idx) => (
-              <Typography key={idx} variant="body2">{skill}</Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+            {softSkills.map((skill) => (
+              <Typography key={skill.id} variant="body2">{skill.name}</Typography>
             ))}
           </Box>
         </>
       )}
+
+      <Typography variant="h6">Проекты</Typography>
+      {projects.filter(p => p.included).map(project => (
+        <Typography key={project.id} variant="body2">{project.title}</Typography>
+      ))}
     </Box>
   );
 };

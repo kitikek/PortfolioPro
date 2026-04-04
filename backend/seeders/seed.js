@@ -1,7 +1,7 @@
 // backend/src/seeders/seed.js
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
-const db = require('../models');
+const db = require('../src/models');
 
 const { User, Portfolio, Project, Skill, Resume } = db;
 

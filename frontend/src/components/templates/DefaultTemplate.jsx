@@ -2,7 +2,8 @@
 import { Box, Typography, Avatar, Grid, Paper, Divider, Chip } from '@mui/material';
 
 const DefaultTemplate = ({ resume }) => {
-  const { personal, avatar_url, bio, skills, projects, softSkills, educations, experiences } = resume.data;
+  const { personal, bio, skills, projects, softSkills, educations, experiences } = resume.data;
+  const avatar_url = personal?.avatar_url;
 
   return (
     <Paper elevation={3} sx={{ p: 4, maxWidth: '1000px', mx: 'auto' }}>
@@ -61,21 +62,23 @@ const DefaultTemplate = ({ resume }) => {
             ))}
           </Box>
 
+          {softSkills && softSkills.length > 0 && (
+            <>
+              <Typography variant="h6" sx={{ mt: 2 }}>Софт-скиллы</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                {softSkills.map((skill) => (
+                  <Chip key={skill.id} label={skill.name} variant="outlined" />
+                ))}
+              </Box>
+            </>
+          )}
+
           <Typography variant="h6">Проекты</Typography>
           {projects.filter(p => p.included).map(project => (
             <Box key={project.id} sx={{ mb: 2 }}>
               <Typography variant="subtitle1">{project.title}</Typography>
             </Box>
           ))}
-
-          {softSkills.length > 0 && (
-            <>
-              <Typography variant="h6">Софт-скиллы</Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {softSkills.map((skill, idx) => <Chip key={idx} label={skill} variant="outlined" />)}
-              </Box>
-            </>
-          )}
         </Grid>
       </Grid>
     </Paper>

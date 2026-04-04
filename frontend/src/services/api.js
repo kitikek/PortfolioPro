@@ -38,4 +38,10 @@ export const createExperience = (data) => api.post('/experiences', data);
 export const updateExperience = (id, data) => api.put(`/experiences/${id}`, data);
 export const deleteExperience = (id) => api.delete(`/experiences/${id}`);
 
+// --- Софт-скиллы ---
+export const getSoftSkills = () => api.get('/soft-skills');
+export const createSoftSkill = (data) => api.post('/soft-skills', data);
+export const updateSoftSkill = (id, data) => api.put(`/soft-skills/${id}`, data);
+export const deleteSoftSkill = (id) => api.delete(`/soft-skills/${id}`);
+
 export default api;

@@ -8,6 +8,7 @@ import {
   IconButton, Chip, Grid, Paper, Avatar, Switch
 } from '@mui/material';
 import { Delete, Add, PhotoCamera } from '@mui/icons-material';
+import { getSoftSkills } from '../services/api';
 
 const ResumeForm = () => {
   const { id } = useParams();
@@ -26,14 +27,12 @@ const ResumeForm = () => {
   const [selectedSkills, setSelectedSkills] = useState({});
   const [projects, setProjects] = useState([]);
   const [selectedProjects, setSelectedProjects] = useState({});
-  const [softSkills, setSoftSkills] = useState([]);
-  const [newSoftSkill, setNewSoftSkill] = useState('');
-
+  const [softSkillsList, setSoftSkillsList] = useState([]);
+  const [selectedSoftSkills, setSelectedSoftSkills] = useState({});
   const [educations, setEducations] = useState([]);
   const [selectedEducations, setSelectedEducations] = useState({});
   const [experiences, setExperiences] = useState([]);
   const [selectedExperiences, setSelectedExperiences] = useState({});
-
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,14 +43,16 @@ const ResumeForm = () => {
 
     const loadData = async () => {
       try {
-        const [userRes, skillsRes, projectsRes, eduRes, expRes] = await Promise.all([
+        const [userRes, skillsRes, projectsRes, eduRes, expRes, softRes] = await Promise.all([
           axios.get('/api/v1/auth/me', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('/api/v1/skills', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('/api/v1/projects/me', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('/api/v1/educations', { headers: { Authorization: `Bearer ${token}` } }),
           axios.get('/api/v1/experiences', { headers: { Authorization: `Bearer ${token}` } }),
+          getSoftSkills(),
         ]);
 
+        // Пользователь
         const user = userRes.data.success ? userRes.data.data : userRes.data;
         setPersonal({
           full_name: user.full_name || '',
@@ -65,17 +66,19 @@ const ResumeForm = () => {
         setAvatarPreview(user.avatar_url || '');
         setBio(user.bio || '');
 
+        // Hard Skills
         let skillsList = [];
-        let initialSelected = {};
+        let initialSelectedSkills = {};
         if (skillsRes.data.success && Array.isArray(skillsRes.data.data)) {
           skillsList = skillsRes.data.data;
           setSkills(skillsList);
           skillsList.forEach(skill => {
-            initialSelected[skill.id] = { name: skill.name, level: skill.level, included: true };
+            initialSelectedSkills[skill.id] = { name: skill.name, level: skill.level, included: true };
           });
-          setSelectedSkills(initialSelected);
+          setSelectedSkills(initialSelectedSkills);
         }
 
+        // Projects
         let projectsList = [];
         let initialSelectedProj = {};
         if (projectsRes.data.success && Array.isArray(projectsRes.data.data)) {
@@ -87,6 +90,7 @@ const ResumeForm = () => {
           setSelectedProjects(initialSelectedProj);
         }
 
+        // Educations
         let eduList = [];
         let initialSelectedEdu = {};
         if (eduRes.data.success && Array.isArray(eduRes.data.data)) {
@@ -98,6 +102,7 @@ const ResumeForm = () => {
           setSelectedEducations(initialSelectedEdu);
         }
 
+        // Experiences
         let expList = [];
         let initialSelectedExp = {};
         if (expRes.data.success && Array.isArray(expRes.data.data)) {
@@ -109,6 +114,19 @@ const ResumeForm = () => {
           setSelectedExperiences(initialSelectedExp);
         }
 
+        // Soft Skills – по умолчанию все НЕ выбраны
+        let softSkillsData = [];
+        let initialSelectedSoft = {};
+        if (softRes.data.success && Array.isArray(softRes.data.data)) {
+          softSkillsData = softRes.data.data;
+          setSoftSkillsList(softSkillsData);
+          softSkillsData.forEach(ss => {
+            initialSelectedSoft[ss.id] = { name: ss.name, included: false };
+          });
+          setSelectedSoftSkills(initialSelectedSoft);
+        }
+
+        // Если редактируем резюме – загружаем его данные и обновляем выбранные состояния
         if (id) {
           const resumeRes = await axios.get(`/api/v1/resumes/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
@@ -123,8 +141,9 @@ const ResumeForm = () => {
             if (data.personal) setPersonal(prev => ({ ...prev, ...data.personal }));
             if (data.bio !== undefined) setBio(data.bio);
 
+            // Hard Skills
             if (data.skills && skillsList.length) {
-              const updatedSelected = { ...initialSelected };
+              const updatedSelected = { ...initialSelectedSkills };
               data.skills.forEach(s => {
                 if (updatedSelected[s.id]) {
                   updatedSelected[s.id].included = s.included;
@@ -134,6 +153,7 @@ const ResumeForm = () => {
               setSelectedSkills(updatedSelected);
             }
 
+            // Projects
             if (data.projects && projectsList.length) {
               const updatedSelectedProj = { ...initialSelectedProj };
               data.projects.forEach(p => {
@@ -144,6 +164,7 @@ const ResumeForm = () => {
               setSelectedProjects(updatedSelectedProj);
             }
 
+            // Educations
             if (data.educations && eduList.length) {
               const updatedSelectedEdu = { ...initialSelectedEdu };
               data.educations.forEach(e => {
@@ -154,6 +175,7 @@ const ResumeForm = () => {
               setSelectedEducations(updatedSelectedEdu);
             }
 
+            // Experiences
             if (data.experiences && expList.length) {
               const updatedSelectedExp = { ...initialSelectedExp };
               data.experiences.forEach(e => {
@@ -164,14 +186,21 @@ const ResumeForm = () => {
               setSelectedExperiences(updatedSelectedExp);
             }
 
-            let loadedSoftSkills = [];
-            if (data.softSkills) {
-              if (Array.isArray(data.softSkills)) loadedSoftSkills = data.softSkills;
-              else if (typeof data.softSkills === 'string') {
-                try { loadedSoftSkills = JSON.parse(data.softSkills); } catch (e) {}
-              }
+            // Soft Skills – обновляем выбранные на основе сохранённых
+            if (data.softSkills && data.softSkills.length) {
+              const updatedSelectedSoft = { ...initialSelectedSoft };
+              data.softSkills.forEach(ss => {
+                if (updatedSelectedSoft[ss.id]) {
+                  updatedSelectedSoft[ss.id].included = true;
+                } else {
+                  // если софт-скилл был удалён из общего списка, но нужен в резюме – добавляем его как временный
+                  updatedSelectedSoft[ss.id] = { name: ss.name, included: true };
+                }
+              });
+              setSelectedSoftSkills(updatedSelectedSoft);
+            } else if (data.softSkills && data.softSkills.length === 0) {
+              // все остаются false, что уже установлено
             }
-            setSoftSkills(loadedSoftSkills);
           }
         }
         setLoading(false);
@@ -189,8 +218,7 @@ const ResumeForm = () => {
   const handleProjectToggle = (projectId) => setSelectedProjects(prev => ({ ...prev, [projectId]: { ...prev[projectId], included: !prev[projectId]?.included } }));
   const handleEducationToggle = (eduId) => setSelectedEducations(prev => ({ ...prev, [eduId]: { included: !prev[eduId]?.included } }));
   const handleExperienceToggle = (expId) => setSelectedExperiences(prev => ({ ...prev, [expId]: { included: !prev[expId]?.included } }));
-  const handleAddSoftSkill = () => { if (newSoftSkill.trim()) { setSoftSkills([...softSkills, newSoftSkill.trim()]); setNewSoftSkill(''); } };
-  const handleRemoveSoftSkill = (index) => setSoftSkills(softSkills.filter((_, i) => i !== index));
+  const handleSoftSkillToggle = (skillId) => setSelectedSoftSkills(prev => ({ ...prev, [skillId]: { ...prev[skillId], included: !prev[skillId]?.included } }));
 
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
@@ -215,7 +243,7 @@ const ResumeForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Формируем полные объекты для образования и опыта (с данными, а не только id)
+      // Формируем полные объекты для образования и опыта
       const fullEducations = Object.entries(selectedEducations)
         .filter(([_, val]) => val.included)
         .map(([id]) => educations.find(edu => edu.id === parseInt(id)))
@@ -225,6 +253,11 @@ const ResumeForm = () => {
         .filter(([_, val]) => val.included)
         .map(([id]) => experiences.find(exp => exp.id === parseInt(id)))
         .filter(Boolean);
+
+      // Выбранные софт-скиллы (только те, у которых included === true)
+      const softSkillsSelected = Object.entries(selectedSoftSkills)
+        .filter(([_, val]) => val.included)
+        .map(([id, val]) => ({ id: parseInt(id), name: val.name }));
 
       const resumeData = {
         personal: {
@@ -250,7 +283,7 @@ const ResumeForm = () => {
         })),
         educations: fullEducations,
         experiences: fullExperiences,
-        softSkills: softSkills
+        softSkills: softSkillsSelected
       };
 
       const payload = {
@@ -375,10 +408,10 @@ const ResumeForm = () => {
               </Paper>
             </Grid>
 
-            {/* Навыки */}
+            {/* Hard Skills */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
-                <Typography variant="h6">Навыки</Typography>
+                <Typography variant="h6">Навыки (Hard)</Typography>
                 <List>
                   {skills.map(skill => (
                     <ListItem key={skill.id} dense>
@@ -389,6 +422,29 @@ const ResumeForm = () => {
                     </ListItem>
                   ))}
                 </List>
+              </Paper>
+            </Grid>
+
+            {/* Soft Skills */}
+            <Grid item xs={12}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6">Софт-скиллы</Typography>
+                {softSkillsList.length === 0 ? (
+                  <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                    У вас пока нет добавленных софт-скиллов. Перейдите в раздел «Навыки» → «Soft Skills», чтобы добавить их.
+                  </Typography>
+                ) : (
+                  <List>
+                    {softSkillsList.map(skill => (
+                      <ListItem key={skill.id} dense>
+                        <FormControlLabel
+                          control={<Checkbox checked={selectedSoftSkills[skill.id]?.included || false} onChange={() => handleSoftSkillToggle(skill.id)} />}
+                          label={skill.name}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
               </Paper>
             </Grid>
 
@@ -406,20 +462,6 @@ const ResumeForm = () => {
                     </ListItem>
                   ))}
                 </List>
-              </Paper>
-            </Grid>
-
-            {/* Софт-скиллы */}
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2 }}>
-                <Typography variant="h6">Софт-скиллы</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <TextField label="Новый софт-скилл" value={newSoftSkill} onChange={(e) => setNewSoftSkill(e.target.value)} size="small" sx={{ mr: 1, flexGrow: 1 }} />
-                  <Button variant="contained" onClick={handleAddSoftSkill} startIcon={<Add />}>Добавить</Button>
-                </Box>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {softSkills.map((skill, index) => <Chip key={index} label={skill} onDelete={() => handleRemoveSoftSkill(index)} color="primary" variant="outlined" />)}
-                </Box>
               </Paper>
             </Grid>
 

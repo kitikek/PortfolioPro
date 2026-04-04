@@ -1,8 +1,13 @@
-import { useEffect, useState } from 'react'
-import { Container, Typography, Box, Button, List, ListItem, ListItemText, IconButton, Paper, TextField, InputAdornment, FormControl, InputLabel, Select, MenuItem, Grid } from '@mui/material'
-import { Delete, Edit, BarChart, Radar as RadarIcon, Search } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+// frontend/src/pages/Skills.jsx
+import { useEffect, useState } from 'react';
+import {
+  Container, Typography, Box, Button, List, ListItem, ListItemText,
+  IconButton, Paper, TextField, InputAdornment, FormControl, InputLabel,
+  Select, MenuItem, Grid, Tabs, Tab
+} from '@mui/material';
+import { Delete, Edit, BarChart, Radar as RadarIcon, Search } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
   Chart as ChartJS,
   RadarController,
@@ -15,8 +20,10 @@ import {
   CategoryScale,
   LinearScale,
   BarElement,
-} from 'chart.js'
-import { Radar, Bar } from 'react-chartjs-2'
+} from 'chart.js';
+import { Radar, Bar } from 'react-chartjs-2';
+import SoftSkillList from '../components/SoftSkillList';
+import { getSoftSkills, createSoftSkill, updateSoftSkill, deleteSoftSkill } from '../services/api';
 
 ChartJS.register(
   RadarController,
@@ -29,62 +36,111 @@ ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement
-)
+);
 
 const Skills = () => {
-  const [skills, setSkills] = useState([])
-  const [chartType, setChartType] = useState('radar')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('')
-  const [categories, setCategories] = useState([])
-  const navigate = useNavigate()
-  const token = localStorage.getItem('token')
+  const [skills, setSkills] = useState([]);
+  const [softSkills, setSoftSkills] = useState([]);
+  const [chartType, setChartType] = useState('radar');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [tabValue, setTabValue] = useState(0); // 0 - Hard, 1 - Soft
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
 
+  // Загрузка Hard Skills
   useEffect(() => {
     if (!token) {
-      navigate('/login')
-      return
+      navigate('/login');
+      return;
     }
     const fetchSkills = async () => {
       try {
         const res = await axios.get('/api/v1/skills', {
           headers: { Authorization: `Bearer ${token}` }
-        })
+        });
         if (res.data && res.data.success && Array.isArray(res.data.data)) {
-          setSkills(res.data.data)
-          const uniqueCategories = [...new Set(res.data.data.map(s => s.category).filter(c => c && c.trim()))]
-          setCategories(uniqueCategories)
+          setSkills(res.data.data);
+          const uniqueCategories = [...new Set(res.data.data.map(s => s.category).filter(c => c && c.trim()))];
+          setCategories(uniqueCategories);
         } else {
-          console.error('Неожиданный формат ответа:', res.data)
-          setSkills([])
+          setSkills([]);
         }
       } catch (error) {
-        console.error(error)
+        console.error(error);
       }
-    }
-    fetchSkills()
-  }, [navigate, token])
+    };
+    fetchSkills();
+  }, [navigate, token]);
 
-  const handleDelete = async (id) => {
+  // Загрузка Soft Skills
+  useEffect(() => {
+    const fetchSoft = async () => {
+      try {
+        const res = await getSoftSkills();
+        if (res.data.success) setSoftSkills(res.data.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchSoft();
+  }, []);
+
+  // Hard Skills CRUD
+  const handleDeleteHard = async (id) => {
     try {
       await axios.delete(`/api/v1/skills/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
-      })
-      const updatedSkills = skills.filter(s => s.id !== id)
-      setSkills(updatedSkills)
-      const uniqueCategories = [...new Set(updatedSkills.map(s => s.category).filter(c => c && c.trim()))]
-      setCategories(uniqueCategories)
+      });
+      const updatedSkills = skills.filter(s => s.id !== id);
+      setSkills(updatedSkills);
+      const uniqueCategories = [...new Set(updatedSkills.map(s => s.category).filter(c => c && c.trim()))];
+      setCategories(uniqueCategories);
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
-  }
+  };
 
+  // Soft Skills CRUD
+  const handleSaveSoft = async (id, data) => {
+    try {
+      if (id) {
+        const res = await updateSoftSkill(id, data);
+        if (res.data.success) {
+          setSoftSkills(softSkills.map(s => s.id === id ? res.data.data : s));
+        }
+      } else {
+        const res = await createSoftSkill(data);
+        if (res.data.success) {
+          setSoftSkills([res.data.data, ...softSkills]);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Ошибка сохранения софт-скилла');
+    }
+  };
+
+  const handleDeleteSoft = async (id) => {
+    if (window.confirm('Удалить софт-скилл?')) {
+      try {
+        await deleteSoftSkill(id);
+        setSoftSkills(softSkills.filter(s => s.id !== id));
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  // Фильтрация Hard Skills
   const filteredSkills = skills.filter(skill => {
-    const matchesSearch = skill.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory ? skill.category === selectedCategory : true
-    return matchesSearch && matchesCategory
-  })
+    const matchesSearch = skill.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory ? skill.category === selectedCategory : true;
+    return matchesSearch && matchesCategory;
+  });
 
+  // Данные для диаграмм
   const chartData = {
     labels: filteredSkills.map(skill => skill.name),
     datasets: [
@@ -101,7 +157,7 @@ const Skills = () => {
         borderRadius: 8,
       },
     ],
-  }
+  };
 
   const radarOptions = {
     scales: {
@@ -118,7 +174,7 @@ const Skills = () => {
       tooltip: { bodyColor: '#F3F4F6', titleColor: '#F3F4F6' },
     },
     maintainAspectRatio: true,
-  }
+  };
 
   const barOptions = {
     indexAxis: 'y',
@@ -132,7 +188,28 @@ const Skills = () => {
       legend: { labels: { color: '#F3F4F6' } },
       tooltip: { bodyColor: '#F3F4F6', titleColor: '#F3F4F6' },
     },
-  }
+  };
+
+  // Массовое добавление софт-скиллов
+  const handleSaveMultipleSoft = async (skillNames) => {
+    try {
+      const createdSkills = [];
+      for (const name of skillNames) {
+        const res = await createSoftSkill({ name });
+        if (res.data.success) {
+          createdSkills.push(res.data.data);
+        }
+      }
+      if (createdSkills.length > 0) {
+        setSoftSkills(prev => [...createdSkills, ...prev]);
+      }
+      return createdSkills.length;
+    } catch (err) {
+      console.error(err);
+      alert('Ошибка при массовом сохранении');
+      throw err;
+    }
+  };
 
   return (
     <Container maxWidth="lg">
@@ -140,117 +217,139 @@ const Skills = () => {
         <Typography variant="h4" gutterBottom>
           Мои навыки
         </Typography>
-        <Button variant="contained" sx={{ mb: 2 }} onClick={() => navigate('/skills/new')}>
-          Добавить навык
-        </Button>
 
-        {/* Диаграмма */}
-        {filteredSkills.length > 0 && (
-          <Paper sx={{ p: 3, mb: 4, backgroundColor: '#111827' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">Визуализация</Typography>
-              <Box>
-                <Button
-                  size="small"
-                  variant={chartType === 'radar' ? 'contained' : 'outlined'}
-                  onClick={() => setChartType('radar')}
-                  startIcon={<RadarIcon />}
-                  sx={{ mr: 1 }}
-                >
-                  Радар
-                </Button>
-                <Button
-                  size="small"
-                  variant={chartType === 'bar' ? 'contained' : 'outlined'}
-                  onClick={() => setChartType('bar')}
-                  startIcon={<BarChart />}
-                >
-                  Столбцы
-                </Button>
-              </Box>
-            </Box>
-            <Box sx={{ height: 400 }}>
-              {chartType === 'radar' ? (
-                <Radar data={chartData} options={radarOptions} />
-              ) : (
-                <Bar data={chartData} options={barOptions} />
+        {/* Вкладки */}
+        <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ mb: 3 }}>
+          <Tab label="Hard Skills" />
+          <Tab label="Soft Skills" />
+        </Tabs>
+
+        {/* Вкладка Hard Skills */}
+        {tabValue === 0 && (
+          <>
+            <Button variant="contained" sx={{ mb: 2 }} onClick={() => navigate('/skills/new')}>
+              Добавить навык
+            </Button>
+
+            {/* Диаграмма */}
+            {filteredSkills.length > 0 && (
+              <Paper sx={{ p: 3, mb: 4, backgroundColor: '#111827' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6">Визуализация</Typography>
+                  <Box>
+                    <Button
+                      size="small"
+                      variant={chartType === 'radar' ? 'contained' : 'outlined'}
+                      onClick={() => setChartType('radar')}
+                      startIcon={<RadarIcon />}
+                      sx={{ mr: 1 }}
+                    >
+                      Радар
+                    </Button>
+                    <Button
+                      size="small"
+                      variant={chartType === 'bar' ? 'contained' : 'outlined'}
+                      onClick={() => setChartType('bar')}
+                      startIcon={<BarChart />}
+                    >
+                      Столбцы
+                    </Button>
+                  </Box>
+                </Box>
+                <Box sx={{ height: 400 }}>
+                  {chartType === 'radar' ? (
+                    <Radar data={chartData} options={radarOptions} />
+                  ) : (
+                    <Bar data={chartData} options={barOptions} />
+                  )}
+                </Box>
+              </Paper>
+            )}
+
+            {/* Панель поиска и фильтрации */}
+            <Paper sx={{ p: 2, mb: 3, backgroundColor: '#111827' }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Поиск по названию..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Категория</InputLabel>
+                    <Select
+                      value={selectedCategory}
+                      label="Категория"
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                    >
+                      <MenuItem value="">Все категории</MenuItem>
+                      {categories.map(cat => (
+                        <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+              {(searchTerm || selectedCategory) && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="caption" color="textSecondary">
+                    Найдено: {filteredSkills.length} навыков
+                  </Typography>
+                </Box>
               )}
-            </Box>
-          </Paper>
+            </Paper>
+
+            {/* Список Hard Skills */}
+            <List>
+              {filteredSkills.map(skill => (
+                <ListItem key={skill.id} secondaryAction={
+                  <>
+                    <IconButton edge="end" onClick={() => navigate(`/skills/edit/${skill.id}`)}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton edge="end" onClick={() => handleDeleteHard(skill.id)} color="error">
+                      <Delete />
+                    </IconButton>
+                  </>
+                }>
+                  <ListItemText
+                    primary={skill.name}
+                    secondary={`Уровень: ${skill.level} / 10 • Категория: ${skill.category || 'Без категории'}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
+            {filteredSkills.length === 0 && (
+              <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'center', mt: 2 }}>
+                Навыки не найдены. Добавьте первый навык.
+              </Typography>
+            )}
+          </>
         )}
 
-        {/* Панель поиска и фильтрации – теперь под диаграммой */}
-        <Paper sx={{ p: 2, mb: 3, backgroundColor: '#111827' }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Поиск по названию..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Категория</InputLabel>
-                <Select
-                  value={selectedCategory}
-                  label="Категория"
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  <MenuItem value="">Все категории</MenuItem>
-                  {categories.map(cat => (
-                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
-          {(searchTerm || selectedCategory) && (
-            <Box sx={{ mt: 1 }}>
-              <Typography variant="caption" color="textSecondary">
-                Найдено: {filteredSkills.length} навыков
-              </Typography>
-            </Box>
-          )}
-        </Paper>
-
-        {/* Список навыков */}
-        <List>
-          {filteredSkills.map(skill => (
-            <ListItem key={skill.id} secondaryAction={
-              <>
-                <IconButton edge="end" aria-label="edit" onClick={() => navigate(`/skills/edit/${skill.id}`)}>
-                  <Edit />
-                </IconButton>
-                <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(skill.id)}>
-                  <Delete />
-                </IconButton>
-              </>
-            }>
-              <ListItemText
-                primary={skill.name}
-                secondary={`Уровень: ${skill.level} / 10 • Категория: ${skill.category || 'Без категории'}`}
-              />
-            </ListItem>
-          ))}
-        </List>
-        {filteredSkills.length === 0 && (
-          <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'center', mt: 2 }}>
-            Навыки не найдены. Попробуйте изменить фильтры или добавьте новый навык.
-          </Typography>
+        {/* Вкладка Soft Skills */}
+        {tabValue === 1 && (
+          <SoftSkillList
+            softSkills={softSkills}
+            onSave={handleSaveSoft}
+            onDelete={handleDeleteSoft}
+            onSaveMultiple={handleSaveMultipleSoft}
+          />
         )}
       </Box>
     </Container>
-  )
-}
+  );
+};
 
-export default Skills
+export default Skills;
