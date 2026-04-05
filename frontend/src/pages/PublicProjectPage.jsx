@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Container, Typography, Box, Chip, Grid, Paper, IconButton, Button } from '@mui/material';
-import { GitHub, Language, ArrowBack } from '@mui/icons-material';
+import { Container, Typography, Box, Chip, Grid, Paper, IconButton, Button, List, ListItem, ListItemText } from '@mui/material';
+import { GitHub, Language, ArrowBack, GetApp } from '@mui/icons-material';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -49,6 +49,7 @@ const PublicProjectPage = () => {
           <Typography variant="h4">{project.title}</Typography>
         </Box>
 
+        {/* Галерея изображений */}
         {project.images && project.images.length > 0 && (
           <Box sx={{ mb: 4 }}>
             <Swiper modules={[Navigation, Pagination]} navigation pagination={{ clickable: true }} spaceBetween={20} slidesPerView={1}>
@@ -61,6 +62,26 @@ const PublicProjectPage = () => {
           </Box>
         )}
 
+        {/* Видео */}
+        {project.videos && project.videos.length > 0 && (
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" gutterBottom>Видео</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              {project.videos.map((video, idx) => (
+                <Box key={idx} sx={{ width: 320 }}>
+                  {video.type === 'upload' ? (
+                    <video src={video.url} controls style={{ width: '100%' }} />
+                  ) : (
+                    <iframe src={video.url.replace('watch?v=', 'embed/')} width="100%" height="180" frameBorder="0" allowFullScreen title={video.title || 'video'}></iframe>
+                  )}
+                  {video.title && <Typography variant="caption">{video.title}</Typography>}
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        )}
+
+        {/* Основная информация и описание */}
         <Grid container spacing={3}>
           <Grid item xs={12} md={8}>
             <Typography variant="h6">Описание</Typography>
@@ -86,6 +107,21 @@ const PublicProjectPage = () => {
             </Box>
           </Grid>
         </Grid>
+
+        {/* Файлы – в самом низу */}
+        {project.files && project.files.length > 0 && (
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h6" gutterBottom>Файлы</Typography>
+            <List>
+              {project.files.map((file, idx) => (
+                <ListItem key={idx}>
+                  <ListItemText primary={file.name} secondary={`${(file.size / 1024).toFixed(1)} KB`} />
+                  <Button component="a" href={file.url} target="_blank" startIcon={<GetApp />}>Скачать</Button>
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        )}
       </Paper>
     </Container>
   );

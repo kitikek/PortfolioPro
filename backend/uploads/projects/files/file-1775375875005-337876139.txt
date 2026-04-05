@@ -1,0 +1,50 @@
+#1
+Today's job market, especially in tech and creative fields, is highly competitive. Professionals showcase their work across many platforms—GitHub, Behance, LinkedIn and through PDF resumes. This creates a fragmented digital identity. Employers struggle to get a complete, compelling picture of a candidate's skills and experience.
+
+#2
+Existing tools address the problem only partially. Each category has fundamental limitations that prevent it from being a complete solution. 
+
+#3
+Here is a detailed comparison of specific platforms confirms the fragmentation. As we can see, the market is filled with good, but specialized tools. Some are great for simple links but lack depth. Others create beautiful resumes but offer poor project visualization. Design platforms are fantastic for creatives, but not universal. And no current solution connects your self-presentation with actionable, data-driven insights from the job market.
+
+#4
+My solution is to integrate best-in-class features into a single, cohesive platform, eliminating the need for users to fragment their professional identity across multiple tools.
+Crucially, it adds a layer of intelligence: a data-driven recommendation system. This system analyzes user skills, offering advice to close skill gaps and increase career opportunities.
+Thus, the final product is not just a presentation tool, but a functional builder that helps users not just show their skills but also understand their market value and identify clear paths for professional development.
+
+#5
+Regretfully, there are some limitations and here let's outline them.
+First, the service is designed for the digital sector. It's not the best fit for another fields like law or accounting.
+Second, a key feature—the smart skill analysis—relies on external job market data. This makes it dependent on the availability of those APIs.
+Third, it's important to note that the platform displays user-provided information (projects or skill). So the system cannot independently verify the accuracy of this information.
+
+#6
+This sequence illustrates the logical foundation of the research questions. Each question directly informs a key stage in the development of portfolio service.
+
+#7
+Four research questions guide this study, covering visualization, design, architecture, and analytics.
+
+#8
+Research on data visualization shows that visual elements like colors and icons make skill charts more memorable. But memorability doesn’t always mean accuracy—overly decorative visuals can distort the actual information. At the same time, structured self‑presentation increases perceived credibility. So the key is balance: skill visualizations need to be engaging but still clear and accurate.
+
+#9
+A portfolio platform serves two audiences. For creators, usability is critical: simple, well‑structured forms reduce errors and make the process efficient. For employers, the presentation must provide enough depth to allow proper evaluation. Oversimplification can actually hurt assessment quality. And trust matters too—both sides need to feel the platform is reliable. So the design must be intuitive for creators while giving employers the structured information they need.
+
+#10
+Building this system combines two technical approaches. Agile development gives us flexibility and allows iterative delivery. But because the platform handles user data and external APIs, it also needs a modular, scalable architecture that can grow and stay stable. Agile methods support the development process, while a robust backend ensures long‑term reliability—both are essential.
+
+#11
+Job vacancy data reveals patterns in labor market demand—what skills are most needed. Skills themselves act as economic signals. Descriptive analytics simply summarizes the current market. But predictive analytics goes further: it estimates future trends and identifies skill gaps. The goal is to apply predictive logic, comparing the user’s skills with evolving market demand to give personalized, forward‑looking recommendations.
+
+#12
+The methodology follows four phases: domain analysis, design, implementation, and evaluation. The implementation uses React, Node.js, MySQL, and cloud deployment with HH.ru integration. The final phase tests functionality and analytics performance.
+
+#13
+Two results are anticipated: a functional MVP and an analytics module that provides data‑driven career recommendations.
+
+#14
+The research is grounded in established literature from visualization, usability, software engineering, and labor economics. This concludes the presentation.
+
+
+
+

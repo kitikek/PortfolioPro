@@ -59,6 +59,14 @@ const Project = sequelize.define('Project', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  videos: {
+  type: DataTypes.JSON,
+  defaultValue: [],
+  },
+  files: {
+  type: DataTypes.JSON,
+  defaultValue: [],
+  },
 }, {
   timestamps: true,
   underscored: true,
