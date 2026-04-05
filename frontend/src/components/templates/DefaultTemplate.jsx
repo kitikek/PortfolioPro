@@ -1,15 +1,56 @@
-// frontend/src/components/templates/DefaultTemplate.jsx
 import { Box, Typography, Avatar, Grid, Paper, Divider, Chip, Button, LinearProgress } from '@mui/material';
+import { Radar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
 const DefaultTemplate = ({ resume }) => {
-
-  console.log('=== DefaultTemplate ===');
-  console.log('resume.data:', resume.data);
-  console.log('educations:', resume.data?.educations);
-  console.log('experiences:', resume.data?.experiences);
-
   const { personal, bio, skills, projects, softSkills, educations, experiences } = resume.data;
   const avatar_url = personal?.avatar_url;
+
+  // Данные для радарной диаграммы
+  const radarLabels = skills.filter(s => s.included).map(s => s.name);
+  const radarDataValues = skills.filter(s => s.included).map(s => s.level);
+
+  const radarChartData = {
+    labels: radarLabels,
+    datasets: [{
+      label: 'Уровень (1-10)',
+      data: radarDataValues,
+      backgroundColor: 'rgba(243, 112, 30, 0.2)',
+      borderColor: '#F3701E',
+      borderWidth: 2,
+      pointBackgroundColor: '#4B607F',
+      pointBorderColor: '#fff',
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: '#F3701E',
+    }]
+  };
+
+  const radarOptions = {
+    scales: {
+      r: {
+        beginAtZero: true,
+        max: 10,
+        ticks: { stepSize: 2, backdropColor: 'transparent', color: '#9CA3AF' },
+        grid: { color: '#2D3748' },
+        pointLabels: { color: '#F3F4F6' }
+      }
+    },
+    plugins: {
+      legend: { labels: { color: '#F3F4F6' } },
+      tooltip: { bodyColor: '#F3F4F6', titleColor: '#F3F4F6' }
+    },
+    maintainAspectRatio: true
+  };
 
   const renderSkillLevel = (level) => {
     const percent = (level / 10) * 100;
@@ -27,9 +68,43 @@ const DefaultTemplate = ({ resume }) => {
             <Typography variant="body2" sx={{ color: '#9CA3AF' }}>{personal.email}</Typography>
             <Typography variant="body2" sx={{ color: '#9CA3AF' }}>{personal.phone}</Typography>
             <Divider sx={{ my: 2, bgcolor: '#2D3748' }} />
-            {personal.linkedin && <Typography variant="body2">🔗 {personal.linkedin}</Typography>}
-            {personal.github && <Typography variant="body2">🐙 {personal.github}</Typography>}
-            {personal.website && <Typography variant="body2">🌐 {personal.website}</Typography>}
+            
+            {/* Ссылки как кнопки (чипсы) */}
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 1, mt: 1 }}>
+              {personal.linkedin && (
+                <Chip 
+                  label="LinkedIn" 
+                  component="a" 
+                  href={personal.linkedin} 
+                  target="_blank" 
+                  clickable 
+                  sx={{ borderColor: '#4B607F', color: '#F3F4F6', '&:hover': { bgcolor: '#1F2937' } }}
+                  variant="outlined"
+                />
+              )}
+              {personal.github && (
+                <Chip 
+                  label="GitHub" 
+                  component="a" 
+                  href={personal.github} 
+                  target="_blank" 
+                  clickable 
+                  sx={{ borderColor: '#4B607F', color: '#F3F4F6', '&:hover': { bgcolor: '#1F2937' } }}
+                  variant="outlined"
+                />
+              )}
+              {personal.website && (
+                <Chip 
+                  label="Website" 
+                  component="a" 
+                  href={personal.website} 
+                  target="_blank" 
+                  clickable 
+                  sx={{ borderColor: '#4B607F', color: '#F3F4F6', '&:hover': { bgcolor: '#1F2937' } }}
+                  variant="outlined"
+                />
+              )}
+            </Box>
             
             {softSkills && softSkills.length > 0 && (
               <>
@@ -43,7 +118,7 @@ const DefaultTemplate = ({ resume }) => {
           </Box>
         </Grid>
 
-        {/* Правая колонка */}
+        {/* Правая колонка (без изменений, оставляем как было) */}
         <Grid item xs={12} md={8}>
           <Typography variant="h5" gutterBottom sx={{ color: '#F3F4F6' }}>О себе</Typography>
           <Typography variant="body1" paragraph sx={{ color: '#9CA3AF' }}>{bio || 'Нет информации'}</Typography>
@@ -81,8 +156,13 @@ const DefaultTemplate = ({ resume }) => {
             </>
           )}
 
-          {/* Технические навыки с прогресс-барами */}
+          {/* Технические навыки – радар + прогресс-бары */}
           <Typography variant="h5" gutterBottom sx={{ mt: 2, color: '#F3F4F6' }}>Технические навыки</Typography>
+          {radarLabels.length > 0 && (
+            <Box sx={{ height: 280, mb: 3 }}>
+              <Radar data={radarChartData} options={radarOptions} />
+            </Box>
+          )}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 3 }}>
             {skills.filter(s => s.included).map(skill => (
               <Box key={skill.id} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
