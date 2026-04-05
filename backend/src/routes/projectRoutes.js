@@ -13,7 +13,8 @@ const {
   addVideoLink,
   uploadProjectFile,
   deleteProjectFile,
-  getPublicProject
+  getPublicProject,
+  downloadProjectFile      // импортируем новую функцию
 } = require('../controllers/projectController');
 const { protect } = require('../middlewares/authMiddleware');
 const multer = require('multer');
@@ -71,6 +72,9 @@ const router = express.Router();
 
 // Публичный маршрут (без авторизации)
 router.get('/public/:id', getPublicProject);
+
+// Публичное скачивание файла (доступно без авторизации, но проверка прав внутри контроллера)
+router.get('/:id/files/:fileIndex/download', downloadProjectFile);
 
 // Все остальные маршруты требуют авторизации
 router.use(protect);

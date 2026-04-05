@@ -86,7 +86,14 @@ const ProjectPage = () => {
                   {video.type === 'upload' ? (
                     <video src={video.url} controls style={{ width: '100%' }} />
                   ) : (
-                    <iframe src={video.url.replace('watch?v=', 'embed/')} width="100%" height="180" frameBorder="0" allowFullScreen title={video.title || 'video'}></iframe>
+                    <iframe
+                      src={video.url.replace('watch?v=', 'embed/')}
+                      width="100%"
+                      height="180"
+                      frameBorder="0"
+                      allowFullScreen
+                      title={video.title || 'video'}
+                    />
                   )}
                   {video.title && <Typography variant="caption">{video.title}</Typography>}
                 </Box>
@@ -122,7 +129,7 @@ const ProjectPage = () => {
           </Grid>
         </Grid>
 
-        {/* Файлы – в самом низу */}
+        {/* Файлы – в самом низу с принудительным скачиванием */}
         {project.files && project.files.length > 0 && (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h6" gutterBottom>Файлы</Typography>
@@ -130,7 +137,13 @@ const ProjectPage = () => {
               {project.files.map((file, idx) => (
                 <ListItem key={idx}>
                   <ListItemText primary={file.name} secondary={`${(file.size / 1024).toFixed(1)} KB`} />
-                  <Button component="a" href={file.url} target="_blank" startIcon={<GetApp />}>Скачать</Button>
+                  <Button
+                    component="a"
+                    href={`/api/v1/projects/${project.id}/files/${idx}/download`}
+                    startIcon={<GetApp />}
+                  >
+                    Скачать
+                  </Button>
                 </ListItem>
               ))}
             </List>

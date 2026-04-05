@@ -342,6 +342,40 @@ const getPublicProject = async (req, res) => {
   }
 };
 
+const downloadProjectFile = async (req, res) => {
+  try {
+    const { id, fileIndex } = req.params;
+    const project = await Project.findByPk(id, {
+      include: [{ model: Portfolio, as: 'Portfolio' }]
+    });
+    if (!project) return response.error(res, 'Проект не найден', 404);
+
+    // Проверка доступа: если проект не опубликован, проверяем владельца
+    if (!project.is_published && (!req.user || project.Portfolio.user_id !== req.user.id)) {
+      return response.error(res, 'Доступ запрещён', 403);
+    }
+
+    const files = project.files || [];
+    const idx = parseInt(fileIndex);
+    if (isNaN(idx) || idx < 0 || idx >= files.length) {
+      return response.error(res, 'Файл не найден', 404);
+    }
+
+    const file = files[idx];
+    const filePath = path.join(__dirname, '../../', file.url);
+    if (!fs.existsSync(filePath)) {
+      return response.error(res, 'Файл не найден на диске', 404);
+    }
+
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(file.name)}"`);
+    res.setHeader('Content-Type', file.mimeType || 'application/octet-stream');
+    res.sendFile(filePath);
+  } catch (error) {
+    console.error(error);
+    response.error(res, 'Ошибка скачивания', 500);
+  }
+};
+
 module.exports = {
   getUserProjects,
   getProjectsByPortfolio,
@@ -357,4 +391,5 @@ module.exports = {
   uploadProjectFile,
   deleteProjectFile,
   getPublicProject,
+  downloadProjectFile,
 };
