@@ -1,4 +1,3 @@
-// frontend/src/components/Navbar.jsx
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -25,6 +24,7 @@ const Navbar = () => {
               <Button color="inherit" component={Link} to="/projects">Проекты</Button>
               <Button color="inherit" component={Link} to="/skills">Навыки</Button>
               <Button color="inherit" component={Link} to="/resume">Резюме</Button>
+              <Button color="inherit" component={Link} to="/analytics">Аналитика</Button>
               <Button color="inherit" onClick={handleLogout}>Выйти</Button>
             </>
           ) : (

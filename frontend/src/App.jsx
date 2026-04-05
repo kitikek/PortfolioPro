@@ -14,6 +14,7 @@ import ResumeForm from './pages/ResumeForm'
 import PublicResume from './pages/PublicResume'
 import ProjectPage from './pages/ProjectPage'
 import PublicProjectPage from './pages/PublicProjectPage';
+import Analytics from './pages/Analytics';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/resume/public/:id" element={<PublicResume />} />
         <Route path="/projects/:id" element={<ProjectPage />} />
         <Route path="/project/public/:id" element={<PublicProjectPage />} />
+        <Route path="/analytics" element={<Analytics />} />
       </Routes>
     </>
   )
