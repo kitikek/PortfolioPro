@@ -1,5 +1,5 @@
 const express = require('express');
-const { getResumes, createResume, updateResume, deleteResume, getResumeById, publishResume, unpublishResume, getPublicResume, generatePDF } = require('../controllers/resumeController');
+const { getResumes, createResume, updateResume, deleteResume, getResumeById, publishResume, unpublishResume, getPublicResume, generatePDF, exportDocx } = require('../controllers/resumeController');
 const { protect } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
@@ -17,5 +17,6 @@ router.delete('/:id', deleteResume);
 router.put('/:id/publish', publishResume);
 router.put('/:id/unpublish', unpublishResume);
 router.get('/:id/pdf', generatePDF);
+router.get('/:id/docx', exportDocx);
 
 module.exports = router;

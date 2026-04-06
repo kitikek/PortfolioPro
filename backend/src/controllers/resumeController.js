@@ -6,6 +6,8 @@ const path = require('path');
 const defaultTemplate = require('../templates/pdf/defaultTemplate');
 const minimalTemplate = require('../templates/pdf/minimalTemplate');
 const modernTemplate = require('../templates/pdf/modernTemplate');
+const { Packer } = require('docx');
+const generateDocx = require('../templates/docx/resumeDocx');
 
 // Получить все резюме пользователя
 const getResumes = async (req, res) => {
@@ -236,6 +238,28 @@ const generatePDF = async (req, res) => {
   }
 };
 
+const exportDocx = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const resume = await Resume.findOne({ where: { id, user_id: req.user.id } });
+    if (!resume) {
+      return response.error(res, 'Резюме не найдено', 404);
+    }
+
+    const resumeData = resume.data;
+    const doc = generateDocx(resumeData);
+    const buffer = await Packer.toBuffer(doc);
+
+    const fileName = encodeURIComponent(`${resumeData.personal?.full_name || 'resume'}.docx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(buffer);
+  } catch (error) {
+    console.error('DOCX generation error:', error);
+    response.error(res, 'Ошибка генерации DOCX', 500);
+  }
+};
+
 module.exports = {
   getResumes,
   createResume,
@@ -246,4 +270,5 @@ module.exports = {
   publishResume,
   unpublishResume,
   generatePDF,
+  exportDocx
 };
