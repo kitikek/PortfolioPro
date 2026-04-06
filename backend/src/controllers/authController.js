@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
 const response = require('../utils/response');
+const { sendResetEmail } = require('../utils/mailer');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -95,4 +96,63 @@ const uploadAvatar = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe, updateMe, uploadAvatar };
+// 1. Запрос на сброс пароля
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return response.error(res, 'Email обязателен', 400);
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return response.success(res, { message: 'Если пользователь с таким email существует, ссылка для сброса пароля будет отправлена.' });
+    }
+
+    const resetToken = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000);
+    await user.update({ resetToken, resetTokenExpiry });
+
+    await sendResetEmail(user.email, resetToken);
+    response.success(res, { message: 'Ссылка для сброса пароля отправлена на ваш email.' });
+  } catch (error) {
+    console.error(error);
+    response.error(res, 'Ошибка сервера', 500);
+  }
+};
+
+// 2. Сброс пароля
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return response.error(res, 'Токен и новый пароль обязательны', 400);
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return response.error(res, 'Недействительная или просроченная ссылка для сброса пароля.', 400);
+    }
+
+    const user = await User.findOne({ where: { id: decoded.id, resetToken: token } });
+    if (!user) return response.error(res, 'Недействительная ссылка для сброса пароля.', 400);
+    if (user.resetTokenExpiry < new Date()) {
+      return response.error(res, 'Срок действия ссылки истёк. Запросите восстановление пароля заново.', 400);
+    }
+
+    await user.update({
+      password_hash: newPassword,
+      resetToken: null,
+      resetTokenExpiry: null,
+    });
+
+    response.success(res, { message: 'Пароль успешно изменён. Теперь вы можете войти с новым паролем.' });
+  } catch (error) {
+    console.error(error);
+    response.error(res, 'Ошибка сервера', 500);
+  }
+};
+
+module.exports = { register, login, getMe, updateMe, uploadAvatar, forgotPassword, resetPassword };

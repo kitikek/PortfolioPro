@@ -15,6 +15,8 @@ import PublicResume from './pages/PublicResume'
 import ProjectPage from './pages/ProjectPage'
 import PublicProjectPage from './pages/PublicProjectPage';
 import Analytics from './pages/Analytics';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (
@@ -38,6 +40,8 @@ function App() {
         <Route path="/projects/:id" element={<ProjectPage />} />
         <Route path="/project/public/:id" element={<PublicProjectPage />} />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Routes>
     </>
   )

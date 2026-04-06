@@ -87,8 +87,6 @@ router.get('/recommendations', async (req, res) => {
 
     const category = req.user.category || 'dev';
 
-    console.log('Отправляем в Python:', JSON.stringify({ skills: skillsMap, category }));
-
     const response = await axios.post(REC_SERVICE_URL, {
       skills: skillsMap,
       category: category
