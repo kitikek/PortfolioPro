@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Container, Typography, Box, Grid, Card, CardContent, Button, Chip, CircularProgress, Alert, List, ListItem, ListItemText, LinearProgress } from '@mui/material';
-import { TrendingUp, Work, AddCircleOutline } from '@mui/icons-material';
+import { Container, Typography, Box, Grid, Card, CardContent, Button, Chip, CircularProgress, Alert, List, ListItem, ListItemText, IconButton, LinearProgress } from '@mui/material';
+import { TrendingUp, Work, AddCircleOutline, Delete as DeleteIcon } from '@mui/icons-material';
 import axios from 'axios';
-import { getSkills } from '../services/api';
+import { getSkills, deleteSkill } from '../services/api';
 
 const Analytics = () => {
   const [recommendations, setRecommendations] = useState(null);
@@ -10,23 +10,39 @@ const Analytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [adding, setAdding] = useState({});
+  const [deleting, setDeleting] = useState({});
+
+  const loadSkills = async () => {
+    const skillsRes = await getSkills();
+    setUserSkills(skillsRes.data.success ? skillsRes.data.data : []);
+  };
+
+  const loadRecommendations = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const recRes = await axios.get('/api/v1/analytics/recommendations', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (recRes.data.success) {
+        setRecommendations(recRes.data.data);
+      } else {
+        setError(recRes.data.error);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const refreshAll = async () => {
+    await Promise.all([loadSkills(), loadRecommendations()]);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const token = localStorage.getItem('token');
-        const skillsRes = await getSkills();
-        const skills = skillsRes.data.success ? skillsRes.data.data : [];
-        setUserSkills(skills);
-
-        const recRes = await axios.get('/api/v1/analytics/recommendations', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (recRes.data.success) {
-          setRecommendations(recRes.data.data);
-        } else {
-          setError(recRes.data.error);
-        }
+        await loadSkills();
+        await loadRecommendations();
       } catch (err) {
         setError(err.response?.data?.error || 'Ошибка загрузки');
       } finally {
@@ -44,8 +60,7 @@ const Analytics = () => {
         { name: skillName, level: suggestedLevel, category: 'recommended' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      const skillsRes = await getSkills();
-      setUserSkills(skillsRes.data.success ? skillsRes.data.data : []);
+      await refreshAll();
       alert(`Навык "${skillName}" добавлен!`);
     } catch (err) {
       console.error(err);
@@ -55,10 +70,33 @@ const Analytics = () => {
     }
   };
 
+  const handleDeleteSkill = async (skillId, skillName) => {
+    if (!window.confirm(`Удалить навык "${skillName}"?`)) return;
+    setDeleting(prev => ({ ...prev, [skillId]: true }));
+    try {
+      await deleteSkill(skillId);
+      await refreshAll();
+    } catch (err) {
+      console.error(err);
+      alert('Ошибка удаления навыка');
+    } finally {
+      setDeleting(prev => ({ ...prev, [skillId]: false }));
+    }
+  };
+
   if (loading) return <Container sx={{ mt: 4, textAlign: 'center' }}><CircularProgress /></Container>;
   if (error) return <Container sx={{ mt: 4 }}><Alert severity="error">{error}</Alert></Container>;
 
   const userSkillNames = userSkills.map(s => s.name);
+
+  // Функция для форматирования процентов в объяснении
+  const formatExplanation = (explanation) => {
+    // Заменяем "0%" на "менее 1%", если нужно
+    if (explanation.includes('0%')) {
+      return explanation.replace('0%', 'менее 1%');
+    }
+    return explanation;
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -68,12 +106,17 @@ const Analytics = () => {
       </Typography>
 
       <Grid container spacing={4}>
+        {/* Рекомендованные навыки */}
         <Grid item xs={12} md={7}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 <TrendingUp sx={{ mr: 1, verticalAlign: 'middle' }} />
                 Рекомендуемые навыки
+              </Typography>
+              <Typography variant="body2" color="textSecondary" paragraph>
+                <strong>Что означает рейтинг?</strong> Это вероятность от 0 до 1, показывающая, насколько модель уверена, что навык вам пригодится. 
+                Значения 0.1–0.3 – нормальны, даже такой навык может быть полезен для развития. Проценты в объяснении показывают, как часто рекомендуемый навык встречается вместе с вашими текущими навыками в вакансиях.
               </Typography>
               {recommendations?.recommended_skills?.length === 0 && (
                 <Typography>Нет рекомендаций. Добавьте больше навыков в профиль.</Typography>
@@ -87,8 +130,12 @@ const Analytics = () => {
                         primary={rec.skill}
                         secondary={
                           <>
-                            <Typography variant="caption" display="block">Рейтинг: {rec.score.toFixed(2)}</Typography>
-                            <Typography variant="body2" color="textSecondary">{rec.explanation}</Typography>
+                            <Box component="span" display="block" fontSize="0.75rem" color="textSecondary">
+                              Рейтинг: {rec.score.toFixed(2)}
+                            </Box>
+                            <Box component="span" display="block" fontSize="0.875rem">
+                              {formatExplanation(rec.explanation)}
+                            </Box>
                           </>
                         }
                       />
@@ -113,6 +160,7 @@ const Analytics = () => {
           </Card>
         </Grid>
 
+        {/* Подходящие профессии и текущие навыки */}
         <Grid item xs={12} md={5}>
           <Card>
             <CardContent>
@@ -125,7 +173,7 @@ const Analytics = () => {
                   <ListItem key={idx} divider>
                     <ListItemText
                       primary={prof.title}
-                      secondary={`Соответствие: ${prof.relevance * 100}%`}
+                      secondary={`Соответствие: ${(prof.relevance * 100).toFixed(1)}%`}
                     />
                     <Box sx={{ width: 80 }}>
                       <LinearProgress variant="determinate" value={prof.relevance * 100} />
@@ -141,7 +189,14 @@ const Analytics = () => {
               <Typography variant="h6">Ваши текущие навыки</Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
                 {userSkills.map(skill => (
-                  <Chip key={skill.id} label={`${skill.name} (${skill.level}/10)`} color="primary" variant="outlined" />
+                  <Chip
+                    key={skill.id}
+                    label={`${skill.name} (${skill.level}/10)`}
+                    color="primary"
+                    variant="outlined"
+                    onDelete={deleting[skill.id] ? undefined : () => handleDeleteSkill(skill.id, skill.name)}
+                    deleteIcon={deleting[skill.id] ? <CircularProgress size={16} /> : <DeleteIcon />}
+                  />
                 ))}
               </Box>
             </CardContent>

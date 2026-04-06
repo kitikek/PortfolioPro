@@ -6,6 +6,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 import os
+import shutil
 from datetime import datetime
 
 def load_latest_data(role_name):
@@ -51,11 +52,19 @@ def train_and_save():
         model.save(f'models/{role_name}_autoencoder.h5')
         with open(f'models/{role_name}_skills.pkl', 'wb') as f:
             pickle.dump(skills, f)
-        # Также копируем последнюю co-occurrence матрицу для объяснений
+        # Копируем последнюю co-occurrence матрицу
         coocc_files = [f for f in os.listdir('data') if f.startswith(f'{role_name}_coocc_') and f.endswith('.npy')]
         if coocc_files:
             latest_coocc = sorted(coocc_files)[-1]
-            np.save(f'models/{role_name}_coocc.npy', np.load(os.path.join('data', latest_coocc)))
+            shutil.copy(os.path.join('data', latest_coocc), f'models/{role_name}_coocc.npy')
+        # Копируем последний файл профессий (если есть)
+        prof_files = [f for f in os.listdir('data') if f.startswith(f'{role_name}_professions_') and f.endswith('.pkl')]
+        if prof_files:
+            latest_prof = sorted(prof_files)[-1]
+            shutil.copy(os.path.join('data', latest_prof), f'models/{role_name}_professions.pkl')
+            print(f"Professions for {role_name} saved")
+        else:
+            print(f"WARNING: No professions file found for {role_name}")
         print(f"Model for {role_name} saved")
 
 if __name__ == "__main__":

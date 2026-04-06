@@ -1,6 +1,11 @@
 // backend/src/controllers/resumeController.js
 const { Resume, Education, Experience } = require('../models');
 const response = require('../utils/response');
+const puppeteer = require('puppeteer');
+const path = require('path');
+const defaultTemplate = require('../templates/pdf/defaultTemplate');
+const minimalTemplate = require('../templates/pdf/minimalTemplate');
+const modernTemplate = require('../templates/pdf/modernTemplate');
 
 // Получить все резюме пользователя
 const getResumes = async (req, res) => {
@@ -178,6 +183,59 @@ const unpublishResume = async (req, res) => {
   }
 };
 
+const getTemplate = (templateName) => {
+  switch (templateName) {
+    case 'minimal': return minimalTemplate;
+    case 'modern': return modernTemplate;
+    default: return defaultTemplate;
+  }
+};
+
+const generatePDF = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const resume = await Resume.findOne({ where: { id, user_id: req.user.id } });
+    if (!resume) {
+      return response.error(res, 'Резюме не найдено', 404);
+    }
+
+    const resumeData = JSON.parse(JSON.stringify(resume.data));
+    if (resumeData.personal && resumeData.personal.avatar_url) {
+      const avatarUrl = resumeData.personal.avatar_url;
+      if (!avatarUrl.startsWith('http')) {
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        resumeData.personal.avatar_url = `${baseUrl}${avatarUrl}`;
+      }
+    }
+
+    const templateFunc = getTemplate(resume.template);
+    const htmlContent = templateFunc(resumeData);
+
+    const browser = await puppeteer.launch({ 
+      headless: true, 
+      args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+    });
+    const page = await browser.newPage();
+    await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '0.2in', right: '0.2in', bottom: '0.2in', left: '0.2in' } // можно поставить 0, но лучше 0.2in
+    });
+
+    await browser.close();
+
+    const fileName = encodeURIComponent(`${resumeData.personal?.full_name || 'resume'}.pdf`);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    response.error(res, 'Ошибка генерации PDF', 500);
+  }
+};
+
 module.exports = {
   getResumes,
   createResume,
@@ -187,4 +245,5 @@ module.exports = {
   getPublicResume,
   publishResume,
   unpublishResume,
+  generatePDF,
 };

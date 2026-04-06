@@ -1,61 +1,80 @@
-import { useEffect, useState } from 'react'
-import { Container, Typography, Box, Button, List, ListItem, ListItemText, IconButton, Chip } from '@mui/material'
-import { Delete, Edit, Share, Public, Lock } from '@mui/icons-material'
-import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import { useEffect, useState } from 'react';
+import { Container, Typography, Box, Button, List, ListItem, ListItemText, IconButton, Chip } from '@mui/material';
+import { Delete, Edit, Share, Public, Lock, GetApp } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Resume = () => {
-  const [resumes, setResumes] = useState([])
-  const navigate = useNavigate()
-  const token = localStorage.getItem('token')
+  const [resumes, setResumes] = useState([]);
+  const navigate = useNavigate();
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     if (!token) {
-      navigate('/login')
-      return
+      navigate('/login');
+      return;
     }
     const fetchResumes = async () => {
       try {
         const res = await axios.get('/api/v1/resumes', {
           headers: { Authorization: `Bearer ${token}` }
-        })
+        });
         if (res.data && res.data.success && Array.isArray(res.data.data)) {
-          setResumes(res.data.data)
+          setResumes(res.data.data);
         } else {
-          console.error('Неожиданный формат ответа:', res.data)
-          setResumes([])
+          setResumes([]);
         }
       } catch (error) {
-        console.error(error)
+        console.error(error);
       }
-    }
-    fetchResumes()
-  }, [navigate, token])
+    };
+    fetchResumes();
+  }, [navigate, token]);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Удалить резюме?')) return
+    if (!window.confirm('Удалить резюме?')) return;
     try {
       await axios.delete(`/api/v1/resumes/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
-      })
-      setResumes(resumes.filter(r => r.id !== id))
+      });
+      setResumes(resumes.filter(r => r.id !== id));
     } catch (error) {
-      console.error(error)
+      console.error(error);
     }
-  }
+  };
 
   const copyLink = (id) => {
-    const url = `${window.location.origin}/resume/public/${id}`
-    navigator.clipboard.writeText(url)
-    alert('Ссылка скопирована')
-  }
+    const url = `${window.location.origin}/resume/public/${id}`;
+    navigator.clipboard.writeText(url);
+    alert('Ссылка скопирована');
+  };
+
+  const downloadPDF = async (resumeId, title) => {
+    try {
+      const response = await axios.get(`/api/v1/resumes/${resumeId}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${title || 'resume'}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Ошибка скачивания PDF:', error);
+      alert('Не удалось скачать резюме');
+    }
+  };
 
   const formatDate = (dateValue) => {
-    if (!dateValue) return 'Дата неизвестна'
-    const d = new Date(dateValue)
-    if (isNaN(d.getTime())) return 'Дата неизвестна'
-    return d.toLocaleDateString()
-  }
+    if (!dateValue) return 'Дата неизвестна';
+    const d = new Date(dateValue);
+    if (isNaN(d.getTime())) return 'Дата неизвестна';
+    return d.toLocaleDateString();
+  };
 
   return (
     <Container maxWidth="md">
@@ -78,6 +97,9 @@ const Resume = () => {
                     <Share />
                   </IconButton>
                 )}
+                <IconButton edge="end" aria-label="download" onClick={() => downloadPDF(resume.id, resume.title)}>
+                  <GetApp />
+                </IconButton>
                 <IconButton edge="end" aria-label="delete" onClick={() => handleDelete(resume.id)}>
                   <Delete />
                 </IconButton>
@@ -113,7 +135,7 @@ const Resume = () => {
         </List>
       </Box>
     </Container>
-  )
-}
+  );
+};
 
-export default Resume
+export default Resume;
