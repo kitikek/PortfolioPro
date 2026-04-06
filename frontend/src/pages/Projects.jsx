@@ -3,11 +3,13 @@ import { Container, Typography, Box, Button, List, ListItem, IconButton, Chip, A
 import { Delete, Edit, Add, Share, Public, Lock } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useToast } from '../contexts/ToastContext';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (!token) {
@@ -57,7 +59,7 @@ const Projects = () => {
     e.stopPropagation();
     const url = `${window.location.origin}/project/public/${id}`;
     navigator.clipboard.writeText(url);
-    alert('Ссылка на проект скопирована');
+    showToast('Ссылка на проект скопирована', 'success');
   };
 
   return (

@@ -1,32 +1,33 @@
 // frontend/src/App.jsx
-import { Routes, Route } from 'react-router-dom'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Dashboard from './pages/Dashboard'
-import Projects from './pages/Projects'
-import Skills from './pages/Skills'
-import Resume from './pages/Resume'
-import Profile from './pages/Profile'           // добавлен импорт
-import Navbar from './components/Navbar'
-import ProjectForm from './pages/ProjectForm'
-import SkillForm from './pages/SkillForm'
-import ResumeForm from './pages/ResumeForm'
-import PublicResume from './pages/PublicResume'
-import ProjectPage from './pages/ProjectPage'
+import { Routes, Route } from 'react-router-dom';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import Projects from './pages/Projects';
+import Skills from './pages/Skills';
+import Resume from './pages/Resume';
+import Profile from './pages/Profile';
+import Navbar from './components/Navbar';
+import ProjectForm from './pages/ProjectForm';
+import SkillForm from './pages/SkillForm';
+import ResumeForm from './pages/ResumeForm';
+import PublicResume from './pages/PublicResume';
+import ProjectPage from './pages/ProjectPage';
 import PublicProjectPage from './pages/PublicProjectPage';
 import Analytics from './pages/Analytics';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import { ToastProvider } from './contexts/ToastContext';   // импорт провайдера
 
 function App() {
   return (
-    <>
+    <ToastProvider>   {/* обёртка для всех страниц */}
       <Navbar />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Dashboard />} />
-        <Route path="/profile" element={<Profile />} />         {/* новый маршрут */}
+        <Route path="/profile" element={<Profile />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/skills" element={<Skills />} />
         <Route path="/resume" element={<Resume />} />
@@ -43,8 +44,8 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Routes>
-    </>
-  )
+    </ToastProvider>
+  );
 }
 
-export default App
+export default App;

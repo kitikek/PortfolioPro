@@ -2,20 +2,23 @@ import { useState } from 'react';
 import { TextField, Button, Container, Typography, Box, Link as MuiLink } from '@mui/material';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { useToast } from '../contexts/ToastContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const res = await axios.post('/api/v1/auth/login', { email, password });
       localStorage.setItem('token', res.data.token);
+      showToast('Вход выполнен успешно', 'success');
       navigate('/');
     } catch (error) {
-      alert('Login failed');
+      showToast('Ошибка входа. Проверьте email и пароль.', 'error');
     }
   };
 

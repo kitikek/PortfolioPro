@@ -1,16 +1,17 @@
 // frontend/src/pages/Profile.jsx
-import { useState, useEffect } from 'react'
-import { Container, Tabs, Tab, Box, Paper, Typography, Avatar, Button, TextField, Grid } from '@mui/material'
-import { PhotoCamera } from '@mui/icons-material'
-import { getMe, updateUser, uploadAvatar, getEducations, createEducation, updateEducation, deleteEducation, getExperiences, createExperience, updateExperience, deleteExperience } from '../services/api'
-import EducationList from '../components/EducationList'
-import ExperienceList from '../components/ExperienceList'
+import { useState, useEffect } from 'react';
+import { Container, Tabs, Tab, Box, Paper, Typography, Avatar, Button, TextField, Grid } from '@mui/material';
+import { PhotoCamera } from '@mui/icons-material';
+import { getMe, updateUser, uploadAvatar, getEducations, createEducation, updateEducation, deleteEducation, getExperiences, createExperience, updateExperience, deleteExperience } from '../services/api';
+import EducationList from '../components/EducationList';
+import ExperienceList from '../components/ExperienceList';
+import { useToast } from '../contexts/ToastContext';
 
 const Profile = () => {
-  const [tabValue, setTabValue] = useState(0)
-  const [educations, setEducations] = useState([])
-  const [experiences, setExperiences] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [tabValue, setTabValue] = useState(0);
+  const [educations, setEducations] = useState([]);
+  const [experiences, setExperiences] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [personal, setPersonal] = useState({
     full_name: '',
     email: '',
@@ -19,8 +20,9 @@ const Profile = () => {
     github: '',
     website: '',
     bio: '',
-  })
-  const [avatarPreview, setAvatarPreview] = useState('')
+  });
+  const [avatarPreview, setAvatarPreview] = useState('');
+  const { showToast } = useToast();
 
   useEffect(() => {
     const loadData = async () => {
@@ -29,8 +31,8 @@ const Profile = () => {
           getMe(),
           getEducations(),
           getExperiences(),
-        ])
-        const userData = userRes.data.success ? userRes.data.data : userRes.data
+        ]);
+        const userData = userRes.data.success ? userRes.data.data : userRes.data;
         setPersonal({
           full_name: userData.full_name || '',
           email: userData.email || '',
@@ -39,22 +41,22 @@ const Profile = () => {
           github: userData.contacts?.github || '',
           website: userData.contacts?.website || '',
           bio: userData.bio || '',
-        })
-        setAvatarPreview(userData.avatar_url || '')
-        if (eduRes.data.success) setEducations(eduRes.data.data)
-        if (expRes.data.success) setExperiences(expRes.data.data)
+        });
+        setAvatarPreview(userData.avatar_url || '');
+        if (eduRes.data.success) setEducations(eduRes.data.data);
+        if (expRes.data.success) setExperiences(expRes.data.data);
       } catch (err) {
-        console.error(err)
+        console.error(err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    loadData()
-  }, [])
+    };
+    loadData();
+  }, []);
 
   const handlePersonalChange = (field) => (e) => {
-    setPersonal({ ...personal, [field]: e.target.value })
-  }
+    setPersonal({ ...personal, [field]: e.target.value });
+  };
 
   const handleSavePersonal = async () => {
     try {
@@ -67,94 +69,94 @@ const Profile = () => {
           github: personal.github,
           website: personal.website,
         },
-      }
-      const res = await updateUser(payload)
+      };
+      const res = await updateUser(payload);
       if (res.data.success) {
-        alert('Данные сохранены')
+        showToast('Данные сохранены', 'success');
       }
     } catch (err) {
-      console.error(err)
-      alert('Ошибка сохранения')
+      console.error(err);
+      showToast('Ошибка сохранения', 'error');
     }
-  }
+  };
 
   const handleAvatarUpload = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    const formData = new FormData()
-    formData.append('avatar', file)
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('avatar', file);
     try {
-      const res = await uploadAvatar(formData)
+      const res = await uploadAvatar(formData);
       if (res.data.success) {
-        setAvatarPreview(res.data.data.avatar_url)
-        alert('Аватар обновлён')
+        setAvatarPreview(res.data.data.avatar_url);
+        showToast('Аватар обновлён', 'success');
       }
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
-  }
+  };
 
   const handleSaveEducation = async (id, data) => {
     try {
       if (id) {
-        const res = await updateEducation(id, data)
+        const res = await updateEducation(id, data);
         if (res.data.success) {
-          setEducations(educations.map(e => e.id === id ? res.data.data : e))
+          setEducations(educations.map(e => e.id === id ? res.data.data : e));
         }
       } else {
-        const res = await createEducation(data)
+        const res = await createEducation(data);
         if (res.data.success) {
-          setEducations([res.data.data, ...educations])
+          setEducations([res.data.data, ...educations]);
         }
       }
     } catch (err) {
-      console.error(err)
-      alert('Ошибка сохранения')
+      console.error(err);
+      showToast('Ошибка сохранения образования', 'error');
     }
-  }
+  };
 
   const handleDeleteEducation = async (id) => {
     if (window.confirm('Удалить запись?')) {
       try {
-        await deleteEducation(id)
-        setEducations(educations.filter(e => e.id !== id))
+        await deleteEducation(id);
+        setEducations(educations.filter(e => e.id !== id));
       } catch (err) {
-        console.error(err)
+        console.error(err);
       }
     }
-  }
+  };
 
   const handleSaveExperience = async (id, data) => {
     try {
       if (id) {
-        const res = await updateExperience(id, data)
+        const res = await updateExperience(id, data);
         if (res.data.success) {
-          setExperiences(experiences.map(e => e.id === id ? res.data.data : e))
+          setExperiences(experiences.map(e => e.id === id ? res.data.data : e));
         }
       } else {
-        const res = await createExperience(data)
+        const res = await createExperience(data);
         if (res.data.success) {
-          setExperiences([res.data.data, ...experiences])
+          setExperiences([res.data.data, ...experiences]);
         }
       }
     } catch (err) {
-      console.error(err)
-      alert('Ошибка сохранения')
+      console.error(err);
+      showToast('Ошибка сохранения опыта работы', 'error');
     }
-  }
+  };
 
   const handleDeleteExperience = async (id) => {
     if (window.confirm('Удалить запись?')) {
       try {
-        await deleteExperience(id)
-        setExperiences(experiences.filter(e => e.id !== id))
+        await deleteExperience(id);
+        setExperiences(experiences.filter(e => e.id !== id));
       } catch (err) {
-        console.error(err)
+        console.error(err);
       }
     }
-  }
+  };
 
-  if (loading) return <Typography>Загрузка...</Typography>
+  if (loading) return <Typography>Загрузка...</Typography>;
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -220,7 +222,7 @@ const Profile = () => {
         )}
       </Paper>
     </Container>
-  )
-}
+  );
+};
 
-export default Profile
+export default Profile;

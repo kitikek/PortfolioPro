@@ -7,11 +7,13 @@ import {
   List, ListItem, ListItemText
 } from '@mui/material';
 import { Add, Delete, CloudUpload, VideoLibrary, AttachFile } from '@mui/icons-material';
+import { useToast } from '../contexts/ToastContext';
 
 const ProjectForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+  const { showToast } = useToast();
   
   // Основные поля
   const [title, setTitle] = useState('');
@@ -109,7 +111,7 @@ const ProjectForm = () => {
       }
     } catch (err) {
       console.error(err);
-      alert('Ошибка загрузки');
+      showToast('Ошибка загрузки изображения', 'error');
     } finally {
       setUploading(false);
     }
@@ -126,7 +128,7 @@ const ProjectForm = () => {
     }
   };
 
-  // Видео — загрузка файла (рабочая версия)
+  // Видео — загрузка файла
   const handleVideoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -152,16 +154,16 @@ const ProjectForm = () => {
       }
     } catch (err) {
       console.error(err);
-      alert('Ошибка загрузки видео');
+      showToast('Ошибка загрузки видео', 'error');
     } finally {
       setUploadingVideo(false);
     }
   };
 
-  // Видео — добавление ссылки (рабочая версия)
+  // Видео — добавление ссылки
   const handleAddVideoLink = async () => {
     if (!newVideoLink.url) {
-      alert('Введите ссылку на видео');
+      showToast('Введите ссылку на видео', 'warning');
       return;
     }
     try {
@@ -179,7 +181,7 @@ const ProjectForm = () => {
       }
     } catch (err) {
       console.error(err);
-      alert('Ошибка добавления ссылки');
+      showToast('Ошибка добавления ссылки', 'error');
     }
   };
 
@@ -196,7 +198,7 @@ const ProjectForm = () => {
     }
   };
 
-  // Файлы (рабочая версия)
+  // Файлы
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -219,7 +221,7 @@ const ProjectForm = () => {
       }
     } catch (err) {
       console.error(err);
-      alert('Ошибка загрузки файла');
+      showToast('Ошибка загрузки файла', 'error');
     } finally {
       setUploadingFile(false);
     }
@@ -279,7 +281,7 @@ const ProjectForm = () => {
       navigate('/projects');
     } catch (err) {
       console.error(err);
-      alert('Ошибка сохранения');
+      showToast('Ошибка сохранения проекта', 'error');
     }
   };
 
@@ -379,7 +381,7 @@ const ProjectForm = () => {
               </Box>
             </Grid>
 
-            {/* Видео — новый порядок кнопок */}
+            {/* Видео */}
             <Grid item xs={12}>
               <Typography variant="h6">Видео</Typography>
               {!id && <Typography variant="caption" color="textSecondary">Сначала сохраните проект, затем добавляйте видео</Typography>}

@@ -3,6 +3,7 @@ import { Container, Typography, Box, Button, List, ListItem, ListItemText, IconB
 import { Delete, Edit, Share, Public, Lock, GetApp, PictureAsPdf, Description } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useToast } from '../contexts/ToastContext';
 
 const Resume = () => {
   const [resumes, setResumes] = useState([]);
@@ -10,6 +11,7 @@ const Resume = () => {
   const [selectedResume, setSelectedResume] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (!token) {
@@ -48,7 +50,7 @@ const Resume = () => {
   const copyLink = (id) => {
     const url = `${window.location.origin}/resume/public/${id}`;
     navigator.clipboard.writeText(url);
-    alert('Ссылка скопирована');
+    showToast('Ссылка скопирована', 'success');
   };
 
   const handleExportClick = (event, resume) => {
@@ -81,7 +83,7 @@ const Resume = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error(`Ошибка скачивания ${format.toUpperCase()}:`, error);
-      alert(`Не удалось скачать ${format.toUpperCase()}`);
+      showToast(`Не удалось скачать ${format.toUpperCase()}`, 'error');
     }
     handleExportClose();
   };

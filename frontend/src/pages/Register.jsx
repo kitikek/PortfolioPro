@@ -1,23 +1,26 @@
-import { useState } from 'react'
-import { TextField, Button, Container, Typography, Box } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import { useState } from 'react';
+import { TextField, Button, Container, Typography, Box } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useToast } from '../contexts/ToastContext';
 
 const Register = () => {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [fullName, setFullName] = useState('')
-  const navigate = useNavigate()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      await axios.post('/api/v1/auth/register', { email, password, full_name: fullName })
-      navigate('/login')
+      await axios.post('/api/v1/auth/register', { email, password, full_name: fullName });
+      showToast('Регистрация успешна! Теперь войдите.', 'success');
+      navigate('/login');
     } catch (error) {
-      alert('Registration failed')
+      showToast('Ошибка регистрации', 'error');
     }
-  }
+  };
 
   return (
     <Container maxWidth="sm">
@@ -57,7 +60,7 @@ const Register = () => {
         </Box>
       </Box>
     </Container>
-  )
-}
+  );
+};
 
-export default Register
+export default Register;

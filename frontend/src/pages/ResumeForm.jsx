@@ -8,11 +8,13 @@ import {
 } from '@mui/material';
 import { Delete, Add, PhotoCamera } from '@mui/icons-material';
 import { getSoftSkills } from '../services/api';
+import { useToast } from '../contexts/ToastContext';
 
 const ResumeForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+  const { showToast } = useToast();
 
   const [title, setTitle] = useState('');
   const [template, setTemplate] = useState('default');
@@ -102,7 +104,6 @@ const ResumeForm = () => {
         }
 
         // === Инициализация состояний выбора ===
-        // По умолчанию все false (будут переопределены при редактировании или включены при создании)
         let initialSelectedSkills = {};
         skillsList.forEach(skill => {
           initialSelectedSkills[skill.id] = { name: skill.name, level: skill.level, included: false };
@@ -219,7 +220,6 @@ const ResumeForm = () => {
           });
         }
 
-        // Устанавливаем состояния
         setSelectedSkills(initialSelectedSkills);
         setSelectedProjects(initialSelectedProjects);
         setSelectedEducations(initialSelectedEducations);
@@ -235,7 +235,6 @@ const ResumeForm = () => {
     loadData();
   }, [token, navigate, id]);
 
-  // Обработчики переключения чекбоксов
   const handlePersonalChange = (field) => (e) => setPersonal({ ...personal, [field]: e.target.value });
   const handleSkillToggle = (skillId) => setSelectedSkills(prev => ({ ...prev, [skillId]: { ...prev[skillId], included: !prev[skillId]?.included } }));
   const handleProjectToggle = (projectId) => setSelectedProjects(prev => ({ ...prev, [projectId]: { ...prev[projectId], included: !prev[projectId]?.included } }));
@@ -255,18 +254,17 @@ const ResumeForm = () => {
       if (res.data.success) {
         setPersonal(prev => ({ ...prev, avatar_url: res.data.data.avatar_url }));
         setAvatarPreview(res.data.data.avatar_url);
-        alert('Аватар загружен');
+        showToast('Аватар загружен', 'success');
       }
     } catch (err) {
       console.error(err);
-      alert('Ошибка загрузки аватара');
+      showToast('Ошибка загрузки аватара', 'error');
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Собираем выбранные записи
       const fullEducations = Object.entries(selectedEducations)
         .filter(([_, val]) => val.included)
         .map(([id]) => educations.find(edu => edu.id === parseInt(id)))
@@ -338,7 +336,7 @@ const ResumeForm = () => {
       navigate('/resume');
     } catch (err) {
       console.error(err);
-      alert('Ошибка сохранения резюме');
+      showToast('Ошибка сохранения резюме', 'error');
     }
   };
 
@@ -352,14 +350,12 @@ const ResumeForm = () => {
         </Typography>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            {/* Название резюме */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <TextField fullWidth label="Название резюме" value={title} onChange={(e) => setTitle(e.target.value)} margin="normal" required helperText="Например: «Резюме для фронтенд‑разработчика»" />
               </Paper>
             </Grid>
 
-            {/* Шаблон и публичность */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Grid container spacing={2}>
@@ -380,7 +376,6 @@ const ResumeForm = () => {
               </Paper>
             </Grid>
 
-            {/* Аватар */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6">Фото</Typography>
@@ -391,7 +386,6 @@ const ResumeForm = () => {
               </Paper>
             </Grid>
 
-            {/* Личная информация */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6">Личная информация</Typography>
@@ -407,7 +401,6 @@ const ResumeForm = () => {
               </Paper>
             </Grid>
 
-            {/* Образование */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6">Образование</Typography>
@@ -424,7 +417,6 @@ const ResumeForm = () => {
               </Paper>
             </Grid>
 
-            {/* Опыт работы */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6">Опыт работы</Typography>
@@ -441,7 +433,6 @@ const ResumeForm = () => {
               </Paper>
             </Grid>
 
-            {/* Hard Skills */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6">Навыки (Hard)</Typography>
@@ -458,7 +449,6 @@ const ResumeForm = () => {
               </Paper>
             </Grid>
 
-            {/* Soft Skills */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6">Софт-скиллы</Typography>
@@ -481,7 +471,6 @@ const ResumeForm = () => {
               </Paper>
             </Grid>
 
-            {/* Проекты */}
             <Grid item xs={12}>
               <Paper sx={{ p: 2 }}>
                 <Typography variant="h6">Проекты</Typography>
@@ -512,7 +501,6 @@ const ResumeForm = () => {
               </Paper>
             </Grid>
 
-            {/* Кнопки */}
             <Grid item xs={12}>
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
                 <Button variant="outlined" onClick={() => navigate('/resume')}>Отмена</Button>

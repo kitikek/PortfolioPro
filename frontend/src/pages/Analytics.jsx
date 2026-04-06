@@ -3,6 +3,7 @@ import { Container, Typography, Box, Grid, Card, CardContent, Button, Chip, Circ
 import { TrendingUp, Work, AddCircleOutline, Delete as DeleteIcon } from '@mui/icons-material';
 import axios from 'axios';
 import { getSkills, deleteSkill } from '../services/api';
+import { useToast } from '../contexts/ToastContext';
 
 const Analytics = () => {
   const [recommendations, setRecommendations] = useState(null);
@@ -11,6 +12,7 @@ const Analytics = () => {
   const [error, setError] = useState(null);
   const [adding, setAdding] = useState({});
   const [deleting, setDeleting] = useState({});
+  const { showToast } = useToast();
 
   const loadSkills = async () => {
     const skillsRes = await getSkills();
@@ -61,10 +63,10 @@ const Analytics = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await refreshAll();
-      alert(`Навык "${skillName}" добавлен!`);
+      showToast(`Навык "${skillName}" добавлен!`, 'success');
     } catch (err) {
       console.error(err);
-      alert('Ошибка добавления навыка');
+      showToast('Ошибка добавления навыка', 'error');
     } finally {
       setAdding(prev => ({ ...prev, [skillName]: false }));
     }
@@ -78,7 +80,7 @@ const Analytics = () => {
       await refreshAll();
     } catch (err) {
       console.error(err);
-      alert('Ошибка удаления навыка');
+      showToast('Ошибка удаления навыка', 'error');
     } finally {
       setDeleting(prev => ({ ...prev, [skillId]: false }));
     }
@@ -89,9 +91,7 @@ const Analytics = () => {
 
   const userSkillNames = userSkills.map(s => s.name);
 
-  // Функция для форматирования процентов в объяснении
   const formatExplanation = (explanation) => {
-    // Заменяем "0%" на "менее 1%", если нужно
     if (explanation.includes('0%')) {
       return explanation.replace('0%', 'менее 1%');
     }
@@ -106,7 +106,6 @@ const Analytics = () => {
       </Typography>
 
       <Grid container spacing={4}>
-        {/* Рекомендованные навыки */}
         <Grid item xs={12} md={7}>
           <Card>
             <CardContent>
@@ -160,7 +159,6 @@ const Analytics = () => {
           </Card>
         </Grid>
 
-        {/* Подходящие профессии и текущие навыки */}
         <Grid item xs={12} md={5}>
           <Card>
             <CardContent>

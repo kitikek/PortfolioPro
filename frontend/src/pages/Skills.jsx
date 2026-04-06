@@ -24,6 +24,7 @@ import {
 import { Radar, Bar } from 'react-chartjs-2';
 import SoftSkillList from '../components/SoftSkillList';
 import { getSoftSkills, createSoftSkill, updateSoftSkill, deleteSoftSkill } from '../services/api';
+import { useToast } from '../contexts/ToastContext';
 
 ChartJS.register(
   RadarController,
@@ -45,9 +46,10 @@ const Skills = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState([]);
-  const [tabValue, setTabValue] = useState(0); // 0 - Hard, 1 - Soft
+  const [tabValue, setTabValue] = useState(0);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
+  const { showToast } = useToast();
 
   // Загрузка Hard Skills
   useEffect(() => {
@@ -118,7 +120,7 @@ const Skills = () => {
       }
     } catch (err) {
       console.error(err);
-      alert('Ошибка сохранения софт-скилла');
+      showToast('Ошибка сохранения софт-скилла', 'error');
     }
   };
 
@@ -206,7 +208,7 @@ const Skills = () => {
       return createdSkills.length;
     } catch (err) {
       console.error(err);
-      alert('Ошибка при массовом сохранении');
+      showToast('Ошибка при массовом сохранении', 'error');
       throw err;
     }
   };
@@ -218,20 +220,17 @@ const Skills = () => {
           Мои навыки
         </Typography>
 
-        {/* Вкладки */}
         <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ mb: 3 }}>
           <Tab label="Hard Skills" />
           <Tab label="Soft Skills" />
         </Tabs>
 
-        {/* Вкладка Hard Skills */}
         {tabValue === 0 && (
           <>
             <Button variant="contained" sx={{ mb: 2 }} onClick={() => navigate('/skills/new')}>
               Добавить навык
             </Button>
 
-            {/* Диаграмма */}
             {filteredSkills.length > 0 && (
               <Paper sx={{ p: 3, mb: 4, backgroundColor: '#111827' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -266,7 +265,6 @@ const Skills = () => {
               </Paper>
             )}
 
-            {/* Панель поиска и фильтрации */}
             <Paper sx={{ p: 2, mb: 3, backgroundColor: '#111827' }}>
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={12} sm={6}>
@@ -310,7 +308,6 @@ const Skills = () => {
               )}
             </Paper>
 
-            {/* Список Hard Skills */}
             <List>
               {filteredSkills.map(skill => (
                 <ListItem key={skill.id} secondaryAction={
@@ -338,7 +335,6 @@ const Skills = () => {
           </>
         )}
 
-        {/* Вкладка Soft Skills */}
         {tabValue === 1 && (
           <SoftSkillList
             softSkills={softSkills}
