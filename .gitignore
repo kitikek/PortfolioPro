@@ -1,0 +1,5 @@
+# Игнорировать все .npy файлы в папке recommendation_service/data
+recommendation_service/data/*.npy
+
+# Или игнорировать всю папку data целиком
+recommendation_service/data/
