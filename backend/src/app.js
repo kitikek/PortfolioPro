@@ -13,6 +13,7 @@ const educationRoutes = require('./routes/educationRoutes');
 const userRoutes = require('./routes/userRoutes');
 const softSkillRoutes = require('./routes/softSkillRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,6 +30,7 @@ app.use('/api/v1/educations', educationRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/soft-skills', softSkillRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/contact', contactRoutes);
 
 // Статическая раздача файлов (если используется)
 app.use('/uploads', express.static('uploads'));

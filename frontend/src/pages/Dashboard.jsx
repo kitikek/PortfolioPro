@@ -1,3 +1,4 @@
+// frontend/src/pages/Dashboard.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -10,7 +11,90 @@ import {
   GitHub, LinkedIn, Email, Phone, Telegram
 } from '@mui/icons-material';
 import axios from 'axios';
+import { useToast } from '../contexts/ToastContext';
 
+// ========== Компонент формы обратной связи (изолированный) ==========
+const ContactForm = () => {
+  const { showToast } = useToast();
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [sending, setSending] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.email || !formData.message) {
+      showToast('Пожалуйста, заполните все поля', 'error');
+      return;
+    }
+    setSending(true);
+    try {
+      const response = await axios.post('/api/v1/contact', formData);
+      if (response.data.success) {
+        showToast('Сообщение отправлено! Мы свяжемся с вами в ближайшее время.', 'success');
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        showToast(response.data.error || 'Ошибка отправки', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Не удалось отправить сообщение. Попробуйте позже.', 'error');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Paper sx={{ p: 4, maxWidth: 600, mx: 'auto' }}>
+      <form onSubmit={handleSubmit}>
+        <TextField
+          fullWidth
+          label="Ваше имя"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          margin="normal"
+          required
+        />
+        <TextField
+          fullWidth
+          label="Ваш email"
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          margin="normal"
+          required
+        />
+        <TextField
+          fullWidth
+          label="Сообщение"
+          name="message"
+          multiline
+          rows={4}
+          value={formData.message}
+          onChange={handleChange}
+          margin="normal"
+          required
+        />
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ mt: 2 }}
+          disabled={sending}
+        >
+          {sending ? 'Отправка...' : 'Отправить'}
+        </Button>
+      </form>
+    </Paper>
+  );
+};
+
+// ========== Основной компонент Dashboard ==========
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -19,27 +103,24 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (token) {
-      // Загружаем данные пользователя
-      axios.get('/api/v1/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      axios.get('/api/v1/auth/me', { headers: { Authorization: `Bearer ${token}` } })
         .then(res => {
           const userData = res.data.success ? res.data.data : res.data;
           setUser(userData);
         })
         .catch(() => setUser(null));
 
-      // Загружаем статистику (количество проектов, резюме, навыков)
       Promise.all([
         axios.get('/api/v1/projects', { headers: { Authorization: `Bearer ${token}` } }),
         axios.get('/api/v1/resumes', { headers: { Authorization: `Bearer ${token}` } }),
         axios.get('/api/v1/skills', { headers: { Authorization: `Bearer ${token}` } })
       ])
         .then(([projectsRes, resumesRes, skillsRes]) => {
-          const projectsCount = projectsRes.data.success ? projectsRes.data.data.length : 0;
-          const resumesCount = resumesRes.data.success ? resumesRes.data.data.length : 0;
-          const skillsCount = skillsRes.data.success ? skillsRes.data.data.length : 0;
-          setStats({ projects: projectsCount, resumes: resumesCount, skills: skillsCount });
+          setStats({
+            projects: projectsRes.data.success ? projectsRes.data.data.length : 0,
+            resumes: resumesRes.data.success ? resumesRes.data.data.length : 0,
+            skills: skillsRes.data.success ? skillsRes.data.data.length : 0,
+          });
         })
         .catch(err => console.error(err));
     }
@@ -115,19 +196,19 @@ const Dashboard = () => {
         </Typography>
         <Grid container spacing={4} sx={{ mt: 2 }}>
           <Grid item xs={12} md={4} textAlign="center">
-            <Speed fontSize="large" color="primary" />
-            <Typography variant="h6">Быстро</Typography>
-            <Typography>Интуитивно понятный интерфейс, всё готово за пару кликов.</Typography>
+            <Speed fontSize="large" sx={{ color: '#F3701E' }} />
+            <Typography variant="h6" sx={{ color: 'white' }}>Быстро</Typography>
+            <Typography sx={{ color: '#cbd5e1' }}>Интуитивно понятный интерфейс, всё готово за пару кликов.</Typography>
           </Grid>
           <Grid item xs={12} md={4} textAlign="center">
-            <Security fontSize="large" color="primary" />
-            <Typography variant="h6">Безопасно</Typography>
-            <Typography>Ваши данные хранятся надёжно, доступ только по токену.</Typography>
+            <Security fontSize="large" sx={{ color: '#F3701E' }} />
+            <Typography variant="h6" sx={{ color: 'white' }}>Безопасно</Typography>
+            <Typography sx={{ color: '#cbd5e1' }}>Ваши данные хранятся надёжно, доступ только по токену.</Typography>
           </Grid>
           <Grid item xs={12} md={4} textAlign="center">
-            <Share fontSize="large" color="primary" />
-            <Typography variant="h6">Публичность</Typography>
-            <Typography>Контролируйте, кто видит ваше портфолио.</Typography>
+            <Share fontSize="large" sx={{ color: '#F3701E' }} />
+            <Typography variant="h6" sx={{ color: 'white' }}>Публичность</Typography>
+            <Typography sx={{ color: '#cbd5e1' }}>Контролируйте, кто видит ваше портфолио.</Typography>
           </Grid>
         </Grid>
       </Container>
@@ -150,6 +231,17 @@ const Dashboard = () => {
           </Grid>
         ))}
       </Grid>
+    </Box>
+  );
+
+  // Форма обратной связи
+  const ContactFormSection = () => (
+    <Box sx={{ my: 6 }}>
+      <Typography variant="h4" align="center" gutterBottom>Напишите нам</Typography>
+      <Typography variant="body1" align="center" paragraph sx={{ mb: 3 }}>
+        Если у вас есть вопросы, предложения или нужна помощь, заполните форму. Мы ответим в ближайшее время.
+      </Typography>
+      <ContactForm />
     </Box>
   );
 
@@ -226,6 +318,7 @@ const Dashboard = () => {
       <FeaturesSection />
       <AdvantagesSection />
       <FaqSection />
+      <ContactFormSection />
       <ContactsSection />
     </Container>
   );
