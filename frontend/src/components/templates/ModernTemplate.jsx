@@ -90,7 +90,7 @@ const ModernTemplate = ({ resume }) => {
         <Box key={project.id} sx={{ mb: 3 }}>
           <Typography variant="subtitle1">
             {project.is_published ? (
-              <a href={`/project/public/${project.id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#1976d2' }}>
+              <a href={`/#/project/public/${project.id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#1976d2' }}>
                 {project.title}
               </a>
             ) : (

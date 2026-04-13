@@ -55,11 +55,21 @@ const Projects = () => {
     navigate(`/projects/${id}`);
   };
 
-  const copyLink = (id, e) => {
+  const copyLink = async (id, e) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/project/public/${id}`;
-    navigator.clipboard.writeText(url);
-    showToast('Ссылка на проект скопирована', 'success');
+    const url = `${window.location.origin}/#/project/public/${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Ссылка на проект скопирована', 'success');
+    } catch (err) {
+      const textarea = document.createElement('textarea');
+      textarea.value = url;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showToast('Ссылка на проект скопирована (вручную)', 'success');
+    }
   };
 
   return (

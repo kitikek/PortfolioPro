@@ -47,10 +47,21 @@ const Resume = () => {
     }
   };
 
-  const copyLink = (id) => {
-    const url = `${window.location.origin}/resume/public/${id}`;
-    navigator.clipboard.writeText(url);
-    showToast('Ссылка скопирована', 'success');
+  const copyLink = async (id) => {
+    const url = `${window.location.origin}/#/resume/public/${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Ссылка скопирована', 'success');
+    } catch (err) {
+      // Fallback для старых браузеров или HTTP
+      const textarea = document.createElement('textarea');
+      textarea.value = url;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showToast('Ссылка скопирована (вручную)', 'success');
+    }
   };
 
   const handleExportClick = (event, resume) => {

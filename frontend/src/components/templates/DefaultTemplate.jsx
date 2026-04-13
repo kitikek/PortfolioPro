@@ -178,7 +178,7 @@ const DefaultTemplate = ({ resume }) => {
             <Box key={project.id} sx={{ mb: 3, borderLeft: '2px solid #4B607F', pl: 2 }}>
               <Typography variant="subtitle1">
                 {project.is_published ? (
-                  <a href={`/project/public/${project.id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#F3701E', fontWeight: 'bold' }}>
+                  <a href={`/#/project/public/${project.id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#F3701E', fontWeight: 'bold' }}>
                     {project.title}
                   </a>
                 ) : (

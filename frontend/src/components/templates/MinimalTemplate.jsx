@@ -122,7 +122,7 @@ const MinimalTemplate = ({ resume }) => {
             <Box key={project.id} sx={{ mb: 3, borderLeft: '2px solid #1976d2', pl: 2 }}>
               <Typography variant="subtitle1">
                 {project.is_published ? (
-                  <a href={`/project/public/${project.id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 'bold' }}>
+                  <a href={`/#/project/public/${project.id}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: '#1976d2', fontWeight: 'bold' }}>
                     {project.title}
                   </a>
                 ) : (
