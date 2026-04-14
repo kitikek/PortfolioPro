@@ -1,0 +1,13 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Briefcase body -->
+  <rect x="30" y="70" width="140" height="90" rx="18" fill="#D6E0EA"></rect>
+
+  <!-- Top flap -->
+  <rect x="30" y="70" width="140" height="30" rx="18" fill="#c5d2df"></rect>
+
+  <!-- Thicker handle -->
+  <path d="M75 70 C85 40, 115 40, 125 70" stroke="#D6E0EA" stroke-width="16" stroke-linecap="round" fill="none"></path>
+
+  <!-- Lock -->
+  <rect x="90" y="105" width="20" height="14" rx="6" fill="#c5d2df"></rect>
+</svg>
