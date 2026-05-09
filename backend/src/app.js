@@ -35,6 +35,16 @@ app.use('/api/v1/contact', contactRoutes);
 // Статическая раздача файлов (если используется)
 app.use('/uploads', express.static('uploads'));
 
+const path = require('path');
+
+// Раздача статических файлов React (собранный фронтенд)
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// Обработка любых маршрутов, не начинающихся с /api или /uploads
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+});
+
 sequelize.authenticate()
   .then(() => {
     console.log('✅ Подключение к MySQL успешно');
