@@ -1,0 +1,8 @@
+meta:
+  environment: node
+  toolchain:
+    name: npm
+    version: 22
+run:
+  containerPort: 5000
+  scriptName: src/app.js

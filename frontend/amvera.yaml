@@ -1,0 +1,7 @@
+meta:
+  environment: node
+  build:
+    commands:
+      - npm install && npm run build
+    artifacts:
+      "dist/": "/"
