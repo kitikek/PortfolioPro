@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Container, Typography, Box, Grid, Card, CardContent, Button,
   Avatar, Divider, Paper, List, ListItem, ListItemIcon, ListItemText,
-  TextField, IconButton, Link as MuiLink
+  TextField, IconButton, Link as MuiLink, Tooltip
 } from '@mui/material';
 import {
   Work, School, Code, Description, Share, Security, Speed,
@@ -246,38 +246,61 @@ const Dashboard = () => {
   );
 
   // Контакты и соцсети
-  const ContactsSection = () => (
-    <Box sx={{ bgcolor: '#111827', color: 'white', py: 6, borderRadius: 2 }}>
-      <Container>
-        <Typography variant="h4" align="center" gutterBottom color="white">
-          Свяжитесь с нами
-        </Typography>
-        <Grid container spacing={4} justifyContent="center">
-          <Grid item xs={12} md={4} textAlign="center">
-            <Email />
-            <Typography>support@portfoliopro.com</Typography>
-          </Grid>
-          <Grid item xs={12} md={4} textAlign="center">
-            <Phone />
-            <Typography>+7 (999) 123-45-67</Typography>
-          </Grid>
-          <Grid item xs={12} md={4} textAlign="center">
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-              <IconButton component="a" href="https://github.com" target="_blank" sx={{ color: 'white' }}>
-                <GitHub />
+  const ContactsSection = () => {
+    const { showToast } = useToast();
+
+    const copyEmail = () => {
+      navigator.clipboard.writeText('portfolio.pro@yandex.com');
+      showToast('Email скопирован в буфер обмена', 'success');
+    };
+
+    return (
+      <Box sx={{ bgcolor: '#111827', color: 'white', py: 4, borderRadius: 2 }}>
+        <Container maxWidth="md">
+          <Typography variant="h4" align="center" gutterBottom color="white">
+            Свяжитесь с нами
+          </Typography>
+          <Grid container spacing={3} justifyContent="center" alignItems="center">
+            {/* Почта */}
+            <Grid item xs={12} sm={4} textAlign="center">
+              <Tooltip title="Скопировать email">
+                <IconButton onClick={copyEmail} sx={{ color: 'white' }}>
+                  <Email sx={{ fontSize: 40 }} />
+                </IconButton>
+              </Tooltip>
+              <Typography variant="body1">Почта</Typography>
+            </Grid>
+
+            {/* GitHub */}
+            <Grid item xs={12} sm={4} textAlign="center">
+              <IconButton
+                component="a"
+                href="https://github.com/kitikek"
+                target="_blank"
+                sx={{ color: 'white' }}
+              >
+                <GitHub fontSize="large" />
               </IconButton>
-              <IconButton component="a" href="https://linkedin.com" target="_blank" sx={{ color: 'white' }}>
-                <LinkedIn />
+              <Typography variant="body1">GitHub</Typography>
+            </Grid>
+
+            {/* Telegram */}
+            <Grid item xs={12} sm={4} textAlign="center">
+              <IconButton
+                component="a"
+                href="https://t.me/eto_kitikek"
+                target="_blank"
+                sx={{ color: 'white' }}
+              >
+                <Telegram fontSize="large" />
               </IconButton>
-              <IconButton component="a" href="https://t.me" target="_blank" sx={{ color: 'white' }}>
-                <Telegram />
-              </IconButton>
-            </Box>
+              <Typography variant="body1">Telegram</Typography>
+            </Grid>
           </Grid>
-        </Grid>
-      </Container>
-    </Box>
-  );
+        </Container>
+      </Box>
+    );
+  };
 
   // Персональная статистика для авторизованных
   const PersonalStats = () => {

@@ -36,6 +36,9 @@ const DefaultTemplate = ({ resume }) => {
   };
 
   const radarOptions = {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 1,
     scales: {
       r: {
         beginAtZero: true,
@@ -48,8 +51,7 @@ const DefaultTemplate = ({ resume }) => {
     plugins: {
       legend: { labels: { color: '#F3F4F6' } },
       tooltip: { bodyColor: '#F3F4F6', titleColor: '#F3F4F6' }
-    },
-    maintainAspectRatio: true
+    }
   };
 
   const renderSkillLevel = (level) => {
@@ -69,7 +71,6 @@ const DefaultTemplate = ({ resume }) => {
             <Typography variant="body2" sx={{ color: '#9CA3AF' }}>{personal.phone}</Typography>
             <Divider sx={{ my: 2, bgcolor: '#2D3748' }} />
             
-            {/* Ссылки как кнопки (чипсы) */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 1, mt: 1 }}>
               {personal.linkedin && (
                 <Chip 
@@ -118,12 +119,11 @@ const DefaultTemplate = ({ resume }) => {
           </Box>
         </Grid>
 
-        {/* Правая колонка (без изменений, оставляем как было) */}
+        {/* Правая колонка */}
         <Grid item xs={12} md={8}>
           <Typography variant="h5" gutterBottom sx={{ color: '#F3F4F6' }}>О себе</Typography>
           <Typography variant="body1" paragraph sx={{ color: '#9CA3AF' }}>{bio || 'Нет информации'}</Typography>
 
-          {/* Образование */}
           {educations && educations.length > 0 && (
             <>
               <Typography variant="h5" gutterBottom sx={{ mt: 2, color: '#F3F4F6' }}>Образование</Typography>
@@ -140,7 +140,6 @@ const DefaultTemplate = ({ resume }) => {
             </>
           )}
 
-          {/* Опыт работы */}
           {experiences && experiences.length > 0 && (
             <>
               <Typography variant="h5" gutterBottom sx={{ mt: 2, color: '#F3F4F6' }}>Опыт работы</Typography>
@@ -156,10 +155,9 @@ const DefaultTemplate = ({ resume }) => {
             </>
           )}
 
-          {/* Технические навыки – радар + прогресс-бары */}
           <Typography variant="h5" gutterBottom sx={{ mt: 2, color: '#F3F4F6' }}>Технические навыки</Typography>
           {radarLabels.length > 0 && (
-            <Box sx={{ height: 280, mb: 3 }}>
+            <Box sx={{ width: '100%', maxWidth: 400, mx: 'auto', mb: 3 }}>
               <Radar data={radarChartData} options={radarOptions} />
             </Box>
           )}
@@ -172,7 +170,6 @@ const DefaultTemplate = ({ resume }) => {
             ))}
           </Box>
 
-          {/* Проекты */}
           <Typography variant="h5" gutterBottom sx={{ mt: 2, color: '#F3F4F6' }}>Проекты</Typography>
           {projects && projects.filter(p => p.included).map(project => (
             <Box key={project.id} sx={{ mb: 3, borderLeft: '2px solid #4B607F', pl: 2 }}>

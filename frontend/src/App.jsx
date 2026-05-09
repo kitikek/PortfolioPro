@@ -1,5 +1,6 @@
 // frontend/src/App.jsx
 import { Routes, Route } from 'react-router-dom';
+import { Box } from '@mui/material';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -17,33 +18,35 @@ import PublicProjectPage from './pages/PublicProjectPage';
 import Analytics from './pages/Analytics';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import { ToastProvider } from './contexts/ToastContext';   // импорт провайдера
+import { ToastProvider } from './contexts/ToastContext';
 
 function App() {
   return (
-    <ToastProvider>   {/* обёртка для всех страниц */}
+    <ToastProvider>
       <Navbar />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/skills" element={<Skills />} />
-        <Route path="/resume" element={<Resume />} />
-        <Route path="/projects/new" element={<ProjectForm />} />
-        <Route path="/projects/edit/:id" element={<ProjectForm />} />
-        <Route path="/skills/new" element={<SkillForm />} />
-        <Route path="/skills/edit/:id" element={<SkillForm />} />
-        <Route path="/resume/new" element={<ResumeForm />} />
-        <Route path="/resume/edit/:id" element={<ResumeForm />} />
-        <Route path="/resume/public/:id" element={<PublicResume />} />
-        <Route path="/projects/:id" element={<ProjectPage />} />
-        <Route path="/project/public/:id" element={<PublicProjectPage />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-      </Routes>
+      <Box sx={{ pt: 8 }}>   {/* отступ сверху, равный высоте панели (~64px) */}
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/skills" element={<Skills />} />
+          <Route path="/resume" element={<Resume />} />
+          <Route path="/projects/new" element={<ProjectForm />} />
+          <Route path="/projects/edit/:id" element={<ProjectForm />} />
+          <Route path="/skills/new" element={<SkillForm />} />
+          <Route path="/skills/edit/:id" element={<SkillForm />} />
+          <Route path="/resume/new" element={<ResumeForm />} />
+          <Route path="/resume/edit/:id" element={<ResumeForm />} />
+          <Route path="/resume/public/:id" element={<PublicResume />} />
+          <Route path="/projects/:id" element={<ProjectPage />} />
+          <Route path="/project/public/:id" element={<PublicProjectPage />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+        </Routes>
+      </Box>
     </ToastProvider>
   );
 }
